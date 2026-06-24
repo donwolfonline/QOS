@@ -1,0 +1,49 @@
+{
+  "cli": {
+    "version": ">= 14.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "node": "18.x",
+      "env": {
+        "EAS_BUILD_PNPM_VERSION": "10.34.4",
+        "EXPO_PUBLIC_MESH_STRATEGY": "mdns_first"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "channel": "preview",
+      "node": "18.x",
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "EAS_BUILD_PNPM_VERSION": "10.34.4",
+        "EXPO_PUBLIC_MESH_STRATEGY": "mdns_first"
+      }
+    },
+    "production": {
+      "channel": "production",
+      "node": "18.x",
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "ios": {
+        "distribution": "store"
+      },
+      "env": {
+        "EAS_BUILD_PNPM_VERSION": "10.34.4",
+        "EXPO_PUBLIC_MESH_STRATEGY": "mdns_first"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

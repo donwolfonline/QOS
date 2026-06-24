@@ -4,7 +4,7 @@ mod config;
 mod context;
 
 use anyhow::{Context, Result};
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -21,10 +21,12 @@ use libp2p::{identity, Swarm};
 use config::RuntimeConfig;
 use context::QosSystemContext;
 
-/// Q-OS: QR-triggered WebAssembly edge runtime.
 #[derive(Parser, Debug)]
 #[command(name = "qos-runtime", version, about)]
 struct Cli {
+    #[command(subcommand)]
+    command: Option<Commands>,
+
     /// Path to the TOML runtime configuration file.
     #[arg(short, long, default_value = "qos.toml")]
     config: std::path::PathBuf,
@@ -32,6 +34,74 @@ struct Cli {
     /// Enable strict mode (require Ed25519 signatures on all modules).
     #[arg(long)]
     strict: bool,
+}
+
+#[derive(Subcommand, Debug)]
+enum Commands {
+    /// Start the Q-OS edge runtime
+    Start,
+    /// Initialize system service for background execution
+    InitService,
+}
+
+fn init_service() -> anyhow::Result<()> {
+    #[cfg(target_os = "linux")]
+    {
+        let service_file = r#"[Unit]
+Description=Q-OS Edge Runtime
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/qos start
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+"#;
+        let path = "/etc/systemd/system/qos.service";
+        std::fs::write(path, service_file).context("Writing systemd service file (requires sudo)")?;
+        println!("Service file generated at {}", path);
+        let _ = std::process::Command::new("systemctl").arg("daemon-reload").status();
+        let _ = std::process::Command::new("systemctl").arg("enable").arg("--now").arg("qos.service").status();
+        println!("Q-OS service started and enabled to run on boot.");
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        let plist = r#"<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.qos.daemon</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/qos</string>
+        <string>start</string>
+    </array>
+    <key>KeepAlive</key>
+    <true/>
+    <key>RunAtLoad</key>
+    <true/>
+</dict>
+</plist>
+"#;
+        let home = std::env::var("HOME").context("HOME environment variable not set")?;
+        let dir = format!("{}/Library/LaunchAgents", home);
+        std::fs::create_dir_all(&dir)?;
+        let path = format!("{}/com.qos.daemon.plist", dir);
+        std::fs::write(&path, plist).context("Writing launchd plist file")?;
+        println!("Launchd plist generated at {}", path);
+        let _ = std::process::Command::new("launchctl").arg("load").arg("-w").arg(&path).status();
+        println!("Q-OS service loaded and configured to run on boot.");
+    }
+
+    #[cfg(not(any(target_os = "linux", target_os = "macos")))]
+    {
+        println!("init-service is only supported on Linux and macOS");
+    }
+
+    Ok(())
 }
 
 #[tokio::main]
@@ -51,6 +121,12 @@ async fn main() -> anyhow::Result<()> {
         .init();
 
     let cli = Cli::parse();
+    
+    if let Some(Commands::InitService) = cli.command {
+        init_service()?;
+        return Ok(());
+    }
+
     info!(config = %cli.config.display(), strict = cli.strict, "Q-OS runtime starting");
 
     // ── Load config ───────────────────────────────────────────────────────────

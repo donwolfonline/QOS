@@ -21,7 +21,8 @@
     "react-native-screens": "4.25.2",
     "react-native-svg": "15.15.4",
     "react-native-vision-camera": "^5.0.11",
-    "zustand": "^5.0.14"
+    "zustand": "^5.0.14",
+    "expo-updates": "~56.0.19"
   },
   "devDependencies": {
     "@types/base-64": "^1.0.2",
@@ -32,7 +33,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "eas-build-pre-install": "bash eas-hooks.sh"
   },
   "private": true
 }

@@ -1,6 +1,6 @@
 warning: /Users/frederickdineen/qos/Cargo.toml: unused manifest key: workspace.dev-dependencies
-   0.264541750s  INFO prepare_target{force=false package_id=dummy_module v0.1.0 (/Users/frederickdineen/qos/tests/dummy_module) target="dummy_module"}: cargo::core::compiler::fingerprint: fingerprint error for dummy_module v0.1.0 (/Users/frederickdineen/qos/tests/dummy_module)/Check { test: false }/TargetInner { name_inferred: true, ..: lib_target("dummy_module", ["cdylib"], "/Users/frederickdineen/qos/tests/dummy_module/src/lib.rs", Edition2021) }
-   0.264570417s  INFO prepare_target{force=false package_id=dummy_module v0.1.0 (/Users/frederickdineen/qos/tests/dummy_module) target="dummy_module"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/frederickdineen/qos/target/debug/.fingerprint/dummy_module-1daab8bd8eb7f302/lib-dummy_module`
+   0.244863375s  INFO prepare_target{force=false package_id=dummy_module v0.1.0 (/Users/frederickdineen/qos/tests/dummy_module) target="dummy_module"}: cargo::core::compiler::fingerprint: fingerprint error for dummy_module v0.1.0 (/Users/frederickdineen/qos/tests/dummy_module)/Check { test: false }/TargetInner { name_inferred: true, ..: lib_target("dummy_module", ["cdylib"], "/Users/frederickdineen/qos/tests/dummy_module/src/lib.rs", Edition2021) }
+   0.245023667s  INFO prepare_target{force=false package_id=dummy_module v0.1.0 (/Users/frederickdineen/qos/tests/dummy_module) target="dummy_module"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/frederickdineen/qos/target/debug/.fingerprint/dummy_module-1b1f6404b7eb4b62/lib-dummy_module`
 
 Caused by:
     No such file or directory (os error 2)
@@ -24,48 +24,11 @@ Stack backtrace:
   15: std::rt::lang_start::<()>::{closure#0}
   16: std::rt::lang_start_internal
   17: _main
-   0.283793709s  INFO prepare_target{force=false package_id=dummy_module v0.1.0 (/Users/frederickdineen/qos/tests/dummy_module) target="dummy_module"}: cargo::core::compiler::fingerprint: fingerprint error for dummy_module v0.1.0 (/Users/frederickdineen/qos/tests/dummy_module)/Check { test: true }/TargetInner { name_inferred: true, ..: lib_target("dummy_module", ["cdylib"], "/Users/frederickdineen/qos/tests/dummy_module/src/lib.rs", Edition2021) }
-   0.283806000s  INFO prepare_target{force=false package_id=dummy_module v0.1.0 (/Users/frederickdineen/qos/tests/dummy_module) target="dummy_module"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/frederickdineen/qos/target/debug/.fingerprint/dummy_module-b93506576be239ee/test-lib-dummy_module`
-
-Caused by:
-    No such file or directory (os error 2)
-
-Stack backtrace:
-   0: std::backtrace::Backtrace::create
-   1: std::backtrace::Backtrace::capture
-   2: cargo_util::paths::read_bytes
-   3: cargo_util::paths::read
-   4: cargo::core::compiler::fingerprint::_compare_old_fingerprint
-   5: cargo::core::compiler::fingerprint::prepare_target
-   6: cargo::core::compiler::compile
-   7: <cargo::core::compiler::build_runner::BuildRunner>::compile
-   8: cargo::ops::cargo_compile::compile_ws
-   9: cargo::ops::cargo_compile::compile_with_exec
-  10: cargo::ops::cargo_compile::compile
-  11: cargo::commands::check::exec
-  12: <cargo::cli::Exec>::exec
-  13: cargo::main
-  14: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
-  15: std::rt::lang_start::<()>::{closure#0}
-  16: std::rt::lang_start_internal
-  17: _main
-   0.357995917s  INFO prepare_target{force=false package_id=qos-api v0.1.0 (/Users/frederickdineen/qos/crates/qos-api) target="qos_api"}: cargo::core::compiler::fingerprint: stale: changed "/Users/frederickdineen/qos/crates/qos-api/src/lib.rs"
-   0.358008750s  INFO prepare_target{force=false package_id=qos-api v0.1.0 (/Users/frederickdineen/qos/crates/qos-api) target="qos_api"}: cargo::core::compiler::fingerprint:           (vs) "/Users/frederickdineen/qos/target/debug/.fingerprint/qos-api-906196d17c3dc935/dep-lib-qos_api"
-   0.358010792s  INFO prepare_target{force=false package_id=qos-api v0.1.0 (/Users/frederickdineen/qos/crates/qos-api) target="qos_api"}: cargo::core::compiler::fingerprint:                FileTime { seconds: 1782272542, nanos: 2827894 } < FileTime { seconds: 1782272603, nanos: 648777777 }
-   0.358535084s  INFO prepare_target{force=false package_id=qos-api v0.1.0 (/Users/frederickdineen/qos/crates/qos-api) target="qos_api"}: cargo::core::compiler::fingerprint: fingerprint dirty for qos-api v0.1.0 (/Users/frederickdineen/qos/crates/qos-api)/Check { test: false }/TargetInner { name_inferred: true, ..: lib_target("qos_api", ["lib"], "/Users/frederickdineen/qos/crates/qos-api/src/lib.rs", Edition2021) }
-   0.358545417s  INFO prepare_target{force=false package_id=qos-api v0.1.0 (/Users/frederickdineen/qos/crates/qos-api) target="qos_api"}: cargo::core::compiler::fingerprint:     dirty: FsStatusOutdated(StaleItem(ChangedFile { reference: "/Users/frederickdineen/qos/target/debug/.fingerprint/qos-api-906196d17c3dc935/dep-lib-qos_api", reference_mtime: FileTime { seconds: 1782272542, nanos: 2827894 }, stale: "/Users/frederickdineen/qos/crates/qos-api/src/lib.rs", stale_mtime: FileTime { seconds: 1782272603, nanos: 648777777 } }))
-   0.421642500s  INFO prepare_target{force=false package_id=qos-api v0.1.0 (/Users/frederickdineen/qos/crates/qos-api) target="qos_api"}: cargo::core::compiler::fingerprint: stale: changed "/Users/frederickdineen/qos/crates/qos-api/src/lib.rs"
-   0.421652250s  INFO prepare_target{force=false package_id=qos-api v0.1.0 (/Users/frederickdineen/qos/crates/qos-api) target="qos_api"}: cargo::core::compiler::fingerprint:           (vs) "/Users/frederickdineen/qos/target/debug/.fingerprint/qos-api-3e9f71457504df81/dep-test-lib-qos_api"
-   0.421654375s  INFO prepare_target{force=false package_id=qos-api v0.1.0 (/Users/frederickdineen/qos/crates/qos-api) target="qos_api"}: cargo::core::compiler::fingerprint:                FileTime { seconds: 1782272542, nanos: 2766311 } < FileTime { seconds: 1782272603, nanos: 648777777 }
-   0.422170500s  INFO prepare_target{force=false package_id=qos-api v0.1.0 (/Users/frederickdineen/qos/crates/qos-api) target="qos_api"}: cargo::core::compiler::fingerprint: fingerprint dirty for qos-api v0.1.0 (/Users/frederickdineen/qos/crates/qos-api)/Check { test: true }/TargetInner { name_inferred: true, ..: lib_target("qos_api", ["lib"], "/Users/frederickdineen/qos/crates/qos-api/src/lib.rs", Edition2021) }
-   0.422180042s  INFO prepare_target{force=false package_id=qos-api v0.1.0 (/Users/frederickdineen/qos/crates/qos-api) target="qos_api"}: cargo::core::compiler::fingerprint:     dirty: FsStatusOutdated(StaleItem(ChangedFile { reference: "/Users/frederickdineen/qos/target/debug/.fingerprint/qos-api-3e9f71457504df81/dep-test-lib-qos_api", reference_mtime: FileTime { seconds: 1782272542, nanos: 2766311 }, stale: "/Users/frederickdineen/qos/crates/qos-api/src/lib.rs", stale_mtime: FileTime { seconds: 1782272603, nanos: 648777777 } }))
-   0.452680584s  INFO prepare_target{force=false package_id=qos-runtime v0.1.0 (/Users/frederickdineen/qos/bins/qos-runtime) target="qos-runtime"}: cargo::core::compiler::fingerprint: fingerprint dirty for qos-runtime v0.1.0 (/Users/frederickdineen/qos/bins/qos-runtime)/Check { test: false }/TargetInner { name: "qos-runtime", doc: true, ..: with_path("/Users/frederickdineen/qos/bins/qos-runtime/src/main.rs", Edition2021) }
-   0.452698667s  INFO prepare_target{force=false package_id=qos-runtime v0.1.0 (/Users/frederickdineen/qos/bins/qos-runtime) target="qos-runtime"}: cargo::core::compiler::fingerprint:     dirty: FsStatusOutdated(StaleDepFingerprint { name: "qos_api" })
-   0.468146917s  INFO prepare_target{force=false package_id=qos-runtime v0.1.0 (/Users/frederickdineen/qos/bins/qos-runtime) target="qos-runtime"}: cargo::core::compiler::fingerprint: fingerprint dirty for qos-runtime v0.1.0 (/Users/frederickdineen/qos/bins/qos-runtime)/Check { test: true }/TargetInner { name: "qos-runtime", doc: true, ..: with_path("/Users/frederickdineen/qos/bins/qos-runtime/src/main.rs", Edition2021) }
-   0.468161292s  INFO prepare_target{force=false package_id=qos-runtime v0.1.0 (/Users/frederickdineen/qos/bins/qos-runtime) target="qos-runtime"}: cargo::core::compiler::fingerprint:     dirty: FsStatusOutdated(StaleDepFingerprint { name: "qos_api" })
-    Checking qos-api v0.1.0 (/Users/frederickdineen/qos/crates/qos-api)
+   0.267925542s  INFO prepare_target{force=false package_id=dummy_module v0.1.0 (/Users/frederickdineen/qos/tests/dummy_module) target="dummy_module"}: cargo::core::compiler::fingerprint: stale: changed "/Users/frederickdineen/qos/tests/dummy_module/src/lib.rs"
+   0.267932333s  INFO prepare_target{force=false package_id=dummy_module v0.1.0 (/Users/frederickdineen/qos/tests/dummy_module) target="dummy_module"}: cargo::core::compiler::fingerprint:           (vs) "/Users/frederickdineen/qos/target/debug/.fingerprint/dummy_module-360e5372b9cd7210/dep-test-lib-dummy_module"
+   0.267934167s  INFO prepare_target{force=false package_id=dummy_module v0.1.0 (/Users/frederickdineen/qos/tests/dummy_module) target="dummy_module"}: cargo::core::compiler::fingerprint:                FileTime { seconds: 1782275544, nanos: 198636328 } < FileTime { seconds: 1782275550, nanos: 238654030 }
+   0.268208792s  INFO prepare_target{force=false package_id=dummy_module v0.1.0 (/Users/frederickdineen/qos/tests/dummy_module) target="dummy_module"}: cargo::core::compiler::fingerprint: fingerprint dirty for dummy_module v0.1.0 (/Users/frederickdineen/qos/tests/dummy_module)/Check { test: true }/TargetInner { name_inferred: true, ..: lib_target("dummy_module", ["cdylib"], "/Users/frederickdineen/qos/tests/dummy_module/src/lib.rs", Edition2021) }
+   0.268216667s  INFO prepare_target{force=false package_id=dummy_module v0.1.0 (/Users/frederickdineen/qos/tests/dummy_module) target="dummy_module"}: cargo::core::compiler::fingerprint:     dirty: FsStatusOutdated(StaleItem(ChangedFile { reference: "/Users/frederickdineen/qos/target/debug/.fingerprint/dummy_module-360e5372b9cd7210/dep-test-lib-dummy_module", reference_mtime: FileTime { seconds: 1782275544, nanos: 198636328 }, stale: "/Users/frederickdineen/qos/tests/dummy_module/src/lib.rs", stale_mtime: FileTime { seconds: 1782275550, nanos: 238654030 } }))
     Checking dummy_module v0.1.0 (/Users/frederickdineen/qos/tests/dummy_module)
-error: could not compile `dummy_module` (lib test) due to 7 previous errors
+error: could not compile `dummy_module` (lib) due to 1 previous error
 warning: build failed, waiting for other jobs to finish...
-error: could not compile `dummy_module` (lib) due to 8 previous errors
-    Checking qos-runtime v0.1.0 (/Users/frederickdineen/qos/bins/qos-runtime)
