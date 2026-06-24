@@ -23,7 +23,25 @@ Built entirely in Rust, it is designed for constrained edge hardware such as Ras
 - **Capability-Gated Host ABI**: A strict "deny-by-default" policy for host capabilities. Modules must explicitly request access to network, storage, or peripherals.
 - **Pluggable State Sync**: Integrates with robust state engines (like `sled`) to manage edge state with optional backend syncing when the network is available.
 
-## 🚀 Quick Start
+## 📦 Installation
+
+To install Q-OS on your edge hardware (Linux/macOS), run the automated installation script. This will download the latest precompiled binary and optionally configure it as a background service:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/donwolfonline/QOS/main/install.sh | bash
+```
+
+## 📱 Experiencing the OS
+
+Once installed, interacting with Q-OS is designed to be seamless, physical, and zero-touch:
+
+1. **Boot the Node:** Run `qos start` in your terminal. Q-OS will initialize the edge daemon and generate a unique session QR code on your screen.
+2. **Launch the Controller:** Open the Q-OS mobile controller app (found in `apps/mobile`).
+3. **Scan & Execute:** Point your mobile device's camera at the terminal's QR code. The app will securely beam your selected WASM payload/instructions to the edge node, executing them instantly within the sandbox!
+
+---
+
+## 🚀 Developer Quick Start
 
 ### Prerequisites
 
