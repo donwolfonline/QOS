@@ -42,23 +42,36 @@ Once installed, interacting with Q-OS is designed to be seamless, physical, and 
 ---
 ## Deployment to Vercel
 
-The Web Application (Admin Dashboard & Guest UI) is optimized for zero-config Vercel deployment straight from this Turborepo workspace.
+Both the Web Application (Admin Dashboard) and the Marketing Portal (Documentation & Registry) are optimized for zero-config Vercel deployment straight from this Turborepo workspace.
 
-### Vercel CLI
+### Deploying via Vercel CLI
 If you are deploying manually via the CLI, run:
 ```bash
-vercel build --prod
-vercel deploy --prebuilt
+# To deploy the Web App
+vercel --cwd apps/web build --prod
+vercel --cwd apps/web deploy --prebuilt
+
+# To deploy the Marketing Portal
+vercel --cwd apps/marketing build --prod
+vercel --cwd apps/marketing deploy --prebuilt
 ```
 
-### Dashboard Settings
-When connecting this repository directly to Vercel via Git:
-- **Root Directory**: Leave this empty / set to the monorepo root (`/`).
-- **Framework Preset**: Select `Next.js`.
-- **Build Command**: `pnpm run build:web` (or let Vercel auto-detect the turbo command).
-- **Output Directory**: Vercel will automatically detect `apps/web/.next` or `apps/web/out`.
+### Vercel Dashboard Settings (Git Integration)
+When connecting this repository directly to Vercel via Git, you will need to create **two separate Vercel projects** (one for `web` and one for `marketing`), both pointing to the same repository.
 
-*Note: The `apps/web/next.config.ts` is already pre-configured with `transpilePackages: ['qos-ui-shared']` to ensure cross-workspace packages are seamlessly bundled.*
+#### Project 1: Web App (Command Center)
+- **Root Directory**: `apps/web`
+- **Framework Preset**: `Next.js`
+- **Build Command**: `pnpm run build`
+- **Output Directory**: `.next`
+
+#### Project 2: Marketing Portal (Docs & Registry)
+- **Root Directory**: `apps/marketing`
+- **Framework Preset**: `Next.js`
+- **Build Command**: `pnpm run build`
+- **Output Directory**: `.next`
+
+*Note: The `next.config.ts` files in both apps are pre-configured with `transpilePackages: ['qos-ui-shared']` to ensure cross-workspace UI components are seamlessly bundled.*
 ## 🚀 Developer Quick Start
 
 ### Prerequisites
