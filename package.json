@@ -9,6 +9,7 @@
   "scripts": {
     "build": "turbo build",
     "build:web": "turbo run build --filter=web",
+    "build:marketing": "turbo run build --filter=marketing",
     "dev": "turbo dev",
     "lint": "turbo run lint"
   },
