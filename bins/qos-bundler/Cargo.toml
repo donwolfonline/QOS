@@ -1,0 +1,17 @@
+[package]
+name = "qos-bundler"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+clap = { workspace = true, features = ["derive"] }
+flate2 = "1.1.9"
+qos-types = { version = "0.1.0", path = "../../crates/qos-types" }
+serde.workspace = true
+serde_json.workspace = true
+tar = "0.4.46"
+tempfile = "3.27.0"

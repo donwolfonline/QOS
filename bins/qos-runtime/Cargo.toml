@@ -1,0 +1,33 @@
+[package]
+name        = "qos-runtime"
+description = "Q-OS edge runtime binary"
+version.workspace    = true
+edition.workspace    = true
+license.workspace    = true
+repository.workspace = true
+
+[[bin]]
+name = "qos-runtime"
+path = "src/main.rs"
+
+[dependencies]
+qos-types           = { workspace = true }
+qos-policy          = { workspace = true }
+qos-bootloader      = { workspace = true }
+qos-engine          = { workspace = true }
+qos-sandbox         = { workspace = true }
+qos-state           = { workspace = true }
+qos-sync-adapters   = { workspace = true }
+tokio               = { workspace = true }
+tracing             = { workspace = true }
+tracing-subscriber  = { workspace = true }
+clap                = { workspace = true }
+serde               = { workspace = true }
+toml                = { workspace = true }
+anyhow              = { workspace = true }
+qos-state-sync = { version = "0.1.0", path = "../../crates/qos-state-sync" }
+libp2p = { version = "0.56.0", features = ["macros", "tcp", "tokio", "yamux", "noise", "mdns", "gossipsub"] }
+qos-api = { version = "0.1.0", path = "../../crates/qos-api" }
+uuid = { workspace = true, features = ["v4"] }
+qr2term = "0.3.3"
+local-ip-address = "0.6.13"

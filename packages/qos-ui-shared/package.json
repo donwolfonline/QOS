@@ -1,0 +1,25 @@
+{
+  "name": "qos-ui-shared",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "tamagui": "^1.111.4",
+    "@tamagui/config": "^1.111.4",
+    "@tamagui/core": "^1.111.4"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*",
+    "react-native-reanimated": "*",
+    "react-native-svg": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/react": "^19.0.0"
+  }
+}

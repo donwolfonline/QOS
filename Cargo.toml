@@ -1,0 +1,106 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/qos-types",
+    "crates/qos-crypto",
+    "crates/qos-policy",
+    "crates/qos-qr",
+    "crates/qos-fetch",
+    "crates/qos-cache",
+    "crates/qos-bootloader",
+    "crates/qos-host-abi",
+    "crates/qos-sandbox",
+    "crates/qos-engine",
+    "crates/qos-state",
+    "crates/qos-sync-adapters",
+    "bins/qos-runtime",
+    "bins/qos-cli", "crates/qos-sdk", "bins/qos-bundler", "tests/dummy_module", "crates/qos-state-sync", "crates/qos-api",
+]
+
+[workspace.package]
+version     = "0.1.0"
+edition     = "2021"
+authors     = ["Q-OS Contributors"]
+license     = "MIT OR Apache-2.0"
+repository  = "https://github.com/your-org/q-os"
+
+[workspace.dependencies]
+# ── Async runtime ────────────────────────────────────────────────────────────
+tokio           = { version = "1", features = ["full"] }
+
+# ── WASM runtime ─────────────────────────────────────────────────────────────
+wasmtime        = { version = "22", default-features = false, features = [
+    "cranelift",
+    "runtime",
+    "parallel-compilation",
+    "cache",
+] }
+
+# ── QR decoding ──────────────────────────────────────────────────────────────
+rqrr            = "0.8"
+image           = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
+
+# ── Embedded KV store ────────────────────────────────────────────────────────
+sled            = "0.34"
+
+# ── Cryptography ─────────────────────────────────────────────────────────────
+ed25519-dalek   = { version = "2", features = ["rand_core"] }
+sha2            = "0.10"
+hex             = "0.4"
+
+# ── HTTP client ──────────────────────────────────────────────────────────────
+reqwest         = { version = "0.12", default-features = false, features = ["rustls-tls", "stream"] }
+
+# ── Serialization ────────────────────────────────────────────────────────────
+serde           = { version = "1", features = ["derive"] }
+serde_json      = "1"
+toml            = "0.8"
+
+# ── Identifiers ──────────────────────────────────────────────────────────────
+uuid            = { version = "1", features = ["v4", "serde"] }
+url             = { version = "2", features = ["serde"] }
+
+# ── Error handling ───────────────────────────────────────────────────────────
+thiserror       = "1"
+anyhow          = "1"
+
+# ── Logging / tracing ────────────────────────────────────────────────────────
+tracing         = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# ── Async trait ─────────────────────────────────────────────────────────────
+async-trait     = "0.1"
+
+# ── CLI ──────────────────────────────────────────────────────────────────────
+clap            = { version = "4", features = ["derive", "env"] }
+
+# ── Internal crates ──────────────────────────────────────────────────────────
+qos-engine          = { path = "crates/qos-engine" }
+qos-types           = { path = "crates/qos-types" }
+qos-crypto          = { path = "crates/qos-crypto" }
+qos-policy          = { path = "crates/qos-policy" }
+qos-qr              = { path = "crates/qos-qr" }
+qos-fetch           = { path = "crates/qos-fetch" }
+qos-cache           = { path = "crates/qos-cache" }
+qos-bootloader      = { path = "crates/qos-bootloader" }
+qos-host-abi        = { path = "crates/qos-host-abi" }
+qos-sandbox         = { path = "crates/qos-sandbox" }
+qos-state           = { path = "crates/qos-state" }
+qos-sync-adapters   = { path = "crates/qos-sync-adapters" }
+
+# ── Dev / test ───────────────────────────────────────────────────────────────
+[workspace.dev-dependencies]
+tempfile        = "3"
+tokio-test      = "0.4"
+
+# ── Release profile (edge-optimised) ─────────────────────────────────────────
+[profile.release]
+opt-level     = "z"
+lto           = true
+codegen-units = 1
+panic         = "abort"
+strip         = true
+
+[profile.dev]
+opt-level = 0
+debug     = true

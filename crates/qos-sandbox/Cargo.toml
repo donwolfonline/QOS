@@ -1,0 +1,24 @@
+[package]
+name        = "qos-sandbox"
+description = "Layer 2 sandbox manager — Wasmtime-based WASM execution for Q-OS"
+version.workspace    = true
+edition.workspace    = true
+license.workspace    = true
+repository.workspace = true
+
+[dependencies]
+qos-types    = { workspace = true }
+qos-host-abi = { workspace = true }
+qos-state    = { workspace = true }
+wasmtime     = { workspace = true }
+tokio        = { workspace = true }
+tracing      = { workspace = true }
+thiserror    = { workspace = true }
+anyhow       = { workspace = true }
+uuid         = { workspace = true }
+
+[dev-dependencies]
+qos-crypto = { path = "../qos-crypto" }
+tempfile = "3.27.0"
+url.workspace = true
+wat = "1.252.0"

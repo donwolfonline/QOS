@@ -1,0 +1,29 @@
+[package]
+name        = "qos-engine"
+description = "Core execution engine for Q-OS — module registry, event bus, memory isolation, invocation lifecycle"
+version.workspace    = true
+edition.workspace    = true
+license.workspace    = true
+repository.workspace = true
+
+[dependencies]
+# Internal
+qos-types    = { workspace = true }
+qos-state    = { workspace = true }
+qos-sandbox  = { workspace = true }
+
+# WASM runtime
+wasmtime     = { workspace = true }
+
+# Async + channels
+tokio        = { workspace = true }
+
+# Observability
+tracing      = { workspace = true }
+thiserror    = { workspace = true }
+anyhow       = { workspace = true }
+
+# Identifiers + serialization
+uuid         = { workspace = true }
+serde        = { workspace = true }
+serde_json   = { workspace = true }

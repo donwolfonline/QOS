@@ -1,0 +1,14 @@
+/Users/frederickdineen/qos/target/debug/deps/serde-007de70ae7f9da5c.d: /Users/frederickdineen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/frederickdineen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/frederickdineen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/frederickdineen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/frederickdineen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/frederickdineen/qos/target/debug/build/serde-3337536b580d8408/out/private.rs
+
+/Users/frederickdineen/qos/target/debug/deps/libserde-007de70ae7f9da5c.rlib: /Users/frederickdineen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/frederickdineen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/frederickdineen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/frederickdineen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/frederickdineen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/frederickdineen/qos/target/debug/build/serde-3337536b580d8408/out/private.rs
+
+/Users/frederickdineen/qos/target/debug/deps/libserde-007de70ae7f9da5c.rmeta: /Users/frederickdineen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/frederickdineen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/frederickdineen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/frederickdineen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/frederickdineen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/frederickdineen/qos/target/debug/build/serde-3337536b580d8408/out/private.rs
+
+/Users/frederickdineen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs:
+/Users/frederickdineen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs:
+/Users/frederickdineen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs:
+/Users/frederickdineen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs:
+/Users/frederickdineen/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs:
+/Users/frederickdineen/qos/target/debug/build/serde-3337536b580d8408/out/private.rs:
+
+# env-dep:OUT_DIR=/Users/frederickdineen/qos/target/debug/build/serde-3337536b580d8408/out

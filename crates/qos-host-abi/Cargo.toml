@@ -1,0 +1,15 @@
+[package]
+name        = "qos-host-abi"
+description = "WASM ↔ host import surface for Q-OS (the security chokepoint)"
+version.workspace    = true
+edition.workspace    = true
+license.workspace    = true
+repository.workspace = true
+
+[dependencies]
+qos-types = { workspace = true }
+qos-state = { workspace = true }
+wasmtime  = { workspace = true }
+tracing   = { workspace = true }
+thiserror = { workspace = true }
+anyhow    = { workspace = true }

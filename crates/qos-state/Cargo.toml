@@ -1,0 +1,16 @@
+[package]
+name        = "qos-state"
+description = "Layer 3 state sync engine — sled KV + WAL for Q-OS"
+version.workspace    = true
+edition.workspace    = true
+license.workspace    = true
+repository.workspace = true
+
+[dependencies]
+qos-types = { workspace = true }
+sled      = { workspace = true }
+serde     = { workspace = true }
+serde_json = { workspace = true }
+tracing   = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["sync"] }

@@ -1,0 +1,13 @@
+[package]
+name        = "qos-policy"
+description = "URI allow-list and capability policy engine for Q-OS"
+version.workspace    = true
+edition.workspace    = true
+license.workspace    = true
+repository.workspace = true
+
+[dependencies]
+qos-types = { workspace = true }
+serde     = { workspace = true }
+url       = { workspace = true }
+thiserror = { workspace = true }

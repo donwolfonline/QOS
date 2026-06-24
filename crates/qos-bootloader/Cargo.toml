@@ -1,0 +1,32 @@
+[package]
+name        = "qos-bootloader"
+description = "Layer 1 bootloader pipeline orchestrator for Q-OS"
+version.workspace    = true
+edition.workspace    = true
+license.workspace    = true
+repository.workspace = true
+
+[dependencies]
+qos-types  = { workspace = true }
+qos-crypto = { workspace = true }
+qos-policy = { workspace = true }
+qos-qr     = { workspace = true }
+qos-fetch  = { workspace = true }
+qos-cache  = { workspace = true }
+qos-engine = { workspace = true }
+qos-state  = { workspace = true }
+tokio      = { workspace = true }
+url        = { workspace = true }
+uuid       = { workspace = true }
+tracing    = { workspace = true }
+thiserror  = { workspace = true }
+serde      = { workspace = true }
+serde_json = { workspace = true }
+reqwest    = { workspace = true }
+tar = "0.4.46"
+flate2 = "1.1.9"
+
+[dev-dependencies]
+image.workspace = true
+qrcode = "0.14.1"
+tempfile = "3.27.0"

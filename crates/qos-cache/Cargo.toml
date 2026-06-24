@@ -1,0 +1,13 @@
+[package]
+name        = "qos-cache"
+description = "LRU WASM bytecode cache for Q-OS"
+version.workspace    = true
+edition.workspace    = true
+license.workspace    = true
+repository.workspace = true
+
+[dependencies]
+qos-types = { workspace = true }
+serde     = { workspace = true }
+thiserror = { workspace = true }
+tracing   = { workspace = true }

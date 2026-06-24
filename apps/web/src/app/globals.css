@@ -1,0 +1,118 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Orbitron:wght@400;700;900&display=swap');
+@import "tailwindcss";
+
+/* ─── Q-OS Cyberpunk Design System ─────────────────────────────────────── */
+:root {
+  --qos-bg:       #0a0a0a;
+  --qos-surface:  #0d0d0d;
+  --qos-surface2: #111111;
+  --qos-border:   rgba(0, 255, 65, 0.18);
+  --qos-primary:  #00ff41;
+  --qos-accent:   #00d4ff;
+  --qos-danger:   #ff003c;
+  --qos-text:     #c9d1d9;
+  --qos-muted:    #484f58;
+  --qos-overlay:  rgba(0, 0, 0, 0.7);
+}
+
+@theme inline {
+  /* Colour palette */
+  --color-qos-bg:       var(--qos-bg);
+  --color-qos-surface:  var(--qos-surface);
+  --color-qos-surface2: var(--qos-surface2);
+  --color-qos-border:   rgba(0,255,65,0.18);
+  --color-qos-primary:  var(--qos-primary);
+  --color-qos-accent:   var(--qos-accent);
+  --color-qos-danger:   var(--qos-danger);
+  --color-qos-text:     var(--qos-text);
+  --color-qos-muted:    var(--qos-muted);
+
+  /* Typography */
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-display: 'Orbitron', monospace;
+
+  /* Animation keyframes */
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+  --animate-scanline: scanline 8s linear infinite;
+  --animate-glitch: glitch 0.3s steps(2, end);
+  --animate-blink: blink 1s step-end infinite;
+}
+
+/* ─── Keyframes ─────────────────────────────────────────────────────────── */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; text-shadow: 0 0 8px var(--qos-primary); }
+  50%       { opacity: 0.7; text-shadow: 0 0 20px var(--qos-primary); }
+}
+
+@keyframes scanline {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(100vh); }
+}
+
+@keyframes glitch {
+  0%   { clip-path: inset(0 0 95% 0); transform: translate(-3px, 0); }
+  25%  { clip-path: inset(40% 0 50% 0); transform: translate(3px, 0); }
+  50%  { clip-path: inset(70% 0 10% 0); transform: translate(-3px, 0); }
+  100% { clip-path: inset(0); transform: translate(0); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+@keyframes ping {
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+/* ─── Base ──────────────────────────────────────────────────────────────── */
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--qos-bg);
+  color: var(--qos-text);
+  font-family: var(--font-mono);
+  /* Subtle vignette */
+  background-image: radial-gradient(ellipse at 50% 0%, rgba(0,255,65,0.04) 0%, transparent 60%);
+  min-height: 100vh;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--qos-bg); }
+::-webkit-scrollbar-thumb { background: var(--qos-muted); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--qos-primary); }
+
+/* ─── Utility overrides ─────────────────────────────────────────────────── */
+.text-glow-primary { text-shadow: 0 0 12px var(--qos-primary); }
+.text-glow-accent  { text-shadow: 0 0 12px var(--qos-accent);  }
+.text-glow-danger  { text-shadow: 0 0 12px var(--qos-danger);  }
+
+.border-glow-primary { box-shadow: 0 0 0 1px var(--qos-primary), 0 0 16px rgba(0,255,65,0.2); }
+.border-glow-accent  { box-shadow: 0 0 0 1px var(--qos-accent),  0 0 16px rgba(0,212,255,0.2); }
+
+/* Corner-bracket pseudo-element helper */
+.corner-brackets {
+  position: relative;
+}
+.corner-brackets::before,
+.corner-brackets::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-color: currentColor;
+  border-style: solid;
+  opacity: 0.6;
+}
+.corner-brackets::before {
+  top: 0; left: 0;
+  border-width: 2px 0 0 2px;
+}
+.corner-brackets::after {
+  bottom: 0; right: 0;
+  border-width: 0 2px 2px 0;
+}

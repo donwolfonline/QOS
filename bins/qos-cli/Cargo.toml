@@ -1,0 +1,23 @@
+[package]
+name        = "qos-cli"
+description = "Q-OS developer CLI — inject QR payloads, inspect state"
+version.workspace    = true
+edition.workspace    = true
+license.workspace    = true
+repository.workspace = true
+
+[[bin]]
+name = "qos"
+path = "src/main.rs"
+
+[dependencies]
+qos-types      = { workspace = true }
+qos-bootloader = { workspace = true }
+qos-sandbox    = { workspace = true }
+qos-state      = { workspace = true }
+tokio          = { workspace = true }
+clap           = { workspace = true }
+serde_json     = { workspace = true }
+tracing        = { workspace = true }
+tracing-subscriber = { workspace = true }
+anyhow         = { workspace = true }

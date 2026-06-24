@@ -1,0 +1,18 @@
+# Q-OS Runtime Configuration Example
+
+# URIs from which WASM modules are permitted to be fetched.
+# Modules from any other origin are rejected at the policy gate.
+allowed_origins = [
+    "https://modules.example.com/",
+    "file:///opt/qos/modules/",
+    "file://local/"
+]
+
+# On-disk directory for the compiled WASM bytecode cache.
+cache_dir = ".qos-cache"
+
+# On-disk directory for the sled embedded state database.
+state_dir = ".qos-state"
+
+# Path to the NDJSON sync event log (LocalAdapter).
+sync_log_path = ".qos-sync.log"

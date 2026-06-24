@@ -1,0 +1,27 @@
+[package]
+name = "qos-api"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+axum = { version = "0.7", features = ["ws", "macros"] }
+tokio = { workspace = true, features = ["full"] }
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors", "trace", "auth"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+tracing.workspace = true
+
+qos-types = { version = "0.1.0", path = "../qos-types" }
+qos-engine = { version = "0.1.0", path = "../qos-engine" }
+qos-bootloader = { version = "0.1.0", path = "../qos-bootloader" }
+futures = "0.3.32"
+tracing-subscriber.workspace = true
+anyhow.workspace = true
+base64 = "0.22.1"
+qos-state = { version = "0.1.0", path = "../qos-state" }
+rust-embed = "8.11.0"
+mime_guess = "2.0.5"
