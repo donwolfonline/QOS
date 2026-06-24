@@ -27,6 +27,8 @@ toml                = { workspace = true }
 anyhow              = { workspace = true }
 qos-state-sync = { version = "0.1.0", path = "../../crates/qos-state-sync" }
 libp2p = { version = "0.56.0", features = ["macros", "tcp", "tokio", "yamux", "noise", "mdns", "gossipsub"] }
+async-trait.workspace = true
+sled.workspace = true
 qos-api = { version = "0.1.0", path = "../../crates/qos-api" }
 uuid = { workspace = true, features = ["v4"] }
 qr2term = "0.3.3"

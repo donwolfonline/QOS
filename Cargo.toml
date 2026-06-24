@@ -14,7 +14,7 @@ members = [
     "crates/qos-state",
     "crates/qos-sync-adapters",
     "bins/qos-runtime",
-    "bins/qos-cli", "crates/qos-sdk", "bins/qos-bundler", "tests/dummy_module", "crates/qos-state-sync", "crates/qos-api",
+    "bins/qos-cli", "crates/qos-sdk", "bins/qos-bundler", "tests/dummy_module", "crates/qos-state-sync", "crates/qos-api", "packages/modules/guestbook",
 ]
 
 [workspace.package]

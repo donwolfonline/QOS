@@ -1,0 +1,128 @@
+[
+  {
+    "title": "Introduction",
+    "category": "Getting Started",
+    "href": "/docs",
+    "content": ""
+  },
+  {
+    "title": "Quick Start",
+    "category": "Getting Started",
+    "href": "/docs/quick-start",
+    "content": "In this guide you will write your first Q-OS WASM module in Rust, compile it to wasm32-unknown-unknown, deploy it to a running local edge node, and watch a guest check in from a mobile browser — all in under 5 minutes."
+  },
+  {
+    "title": "Installation",
+    "category": "Getting Started",
+    "href": "/docs/installation",
+    "content": ""
+  },
+  {
+    "title": "Your First Module",
+    "category": "Getting Started",
+    "href": "/docs/first-module",
+    "content": ""
+  },
+  {
+    "title": "System Overview",
+    "category": "Architecture",
+    "href": "/docs/architecture",
+    "content": "Q-OS is a layered, local-first compute platform. Every component is designed to operate independently of the internet. The four core layers below interact over in-process function calls and LAN sockets — never cloud APIs."
+  },
+  {
+    "title": "Edge Node (Rust Daemon)",
+    "category": "Architecture",
+    "href": "/docs/architecture/edge-node",
+    "content": "The Q-OS Edge Node (`qos-runtime`) is a single, statically compiled Rust binary. It orchestrates the entire lifecycle of a physical interaction: terminating HTTP/WebSocket connections, booting WASM sandboxes, managing state, and finding peers."
+  },
+  {
+    "title": "Sled State Store",
+    "category": "Architecture",
+    "href": "/docs/architecture/sled",
+    "content": "Q-OS uses sled as its primary embedded database. Sled is a high-performance, embedded, lock-free Bw-Tree. It acts as the single source of truth for edge node state."
+  },
+  {
+    "title": "WebSocket Telemetry",
+    "category": "Architecture",
+    "href": "/docs/architecture/websocket",
+    "content": "Q-OS is designed to operate offline, but when a network is available, it provides a high-performance WebSocket telemetry stream at /api/v1/stream. This powers the Admin HUD with zero-latency updates."
+  },
+  {
+    "title": "CRDT Sync Protocol",
+    "category": "Architecture",
+    "href": "/docs/architecture/crdt",
+    "content": "In larger venues, you might deploy multiple Q-OS edge nodes (e.g., one at the entrance, one at the bar). These nodes must synchronize state without relying on a cloud backend."
+  },
+  {
+    "title": "Overview",
+    "category": "qos-sdk Reference",
+    "href": "/docs/sdk-reference",
+    "content": "The Q-OS host ABI exposes a minimal set of extern \"C\" functions that your WASM module can import. There is no separate library to link — the host runtime injects these symbols at instantiation time."
+  },
+  {
+    "title": "qos_abi::read_input",
+    "category": "qos-sdk Reference",
+    "href": "/docs/sdk-reference/read-input",
+    "content": "Reads the JSON payload provided by the host environment (typically passed from the guest's Micro-UI upon scanning the QR code)."
+  },
+  {
+    "title": "qos_abi::write_output",
+    "category": "qos-sdk Reference",
+    "href": "/docs/sdk-reference/write-output",
+    "content": "Sends the final receipt payload from the WASM module back to the host, which is then routed to the guest's Micro-UI and the Admin HUD via an EXECUTION_RECEIPT WebSocket event."
+  },
+  {
+    "title": "qos_abi::state_get",
+    "category": "qos-sdk Reference",
+    "href": "/docs/sdk-reference/state-get",
+    "content": "Retrieves the value for a given key from the Edge Node's Sled database."
+  },
+  {
+    "title": "qos_abi::state_set",
+    "category": "qos-sdk Reference",
+    "href": "/docs/sdk-reference/state-set",
+    "content": "Writes a byte array to a specific key in the Sled state store. This is the primary way a WASM module causes a persistent side-effect."
+  },
+  {
+    "title": "Error Handling",
+    "category": "qos-sdk Reference",
+    "href": "/docs/sdk-reference/errors",
+    "content": "In a #[no_std] WebAssembly environment, error handling must be explicit and deterministic. Q-OS modules must declare a custom panic handler."
+  },
+  {
+    "title": "Overview",
+    "category": "WASM Module Guides",
+    "href": "/docs/wasm-guides",
+    "content": "Each guide walks you through a complete, production-ready WASM module from scratch. Start with the Guestbook to understand the Q-OS ABI, then explore the more advanced guides to build real venue logic."
+  },
+  {
+    "title": "Guest Check-In Module",
+    "category": "WASM Module Guides",
+    "href": "/docs/wasm-guides/guestbook",
+    "content": "This guide demonstrates how to build a simple but robust Guestbook module. It records the total number of physical visits to a location."
+  },
+  {
+    "title": "Menu & Ordering",
+    "category": "WASM Module Guides",
+    "href": "/docs/wasm-guides/menu",
+    "content": "This guide demonstrates how to process incoming JSON payloads (orders) and append them to a Kitchen Display System (KDS) queue."
+  },
+  {
+    "title": "VIP Validation",
+    "category": "WASM Module Guides",
+    "href": "/docs/wasm-guides/vip",
+    "content": "This module handles single-use ticket validation. It reads a token from the guest, checks if it exists in the valid tokens list, and then burns it so it cannot be re-used."
+  },
+  {
+    "title": "Inventory Sync",
+    "category": "WASM Module Guides",
+    "href": "/docs/wasm-guides/inventory",
+    "content": "This guide shows how to decrement inventory counts atomically. In a CRDT mesh network, local subtractions sync across all peer edge nodes automatically."
+  },
+  {
+    "title": "Custom Broadcast Logic",
+    "category": "WASM Module Guides",
+    "href": "/docs/wasm-guides/broadcast",
+    "content": "Sometimes you want a WASM module to actively push notifications directly to the Admin HUD without storing permanent state. You can do this using the qos_sdk::broadcast module."
+  }
+]

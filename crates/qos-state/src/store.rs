@@ -29,6 +29,11 @@ impl SledStateStore {
     pub fn subscribe(&self) -> tokio::sync::broadcast::Receiver<qos_types::SyncEvent> {
         self.tx.subscribe()
     }
+
+    /// Exposes a direct subscriber to all underlying sled database events (both local and remote).
+    pub fn watch_all(&self) -> sled::Subscriber {
+        self.db.watch_prefix(vec![])
+    }
 }
 
 impl crate::StateStore for SledStateStore {

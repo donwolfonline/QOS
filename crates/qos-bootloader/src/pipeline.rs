@@ -15,7 +15,7 @@ use qos_cache::WasmCache;
 use qos_crypto::verify_module_signature;
 use qos_fetch::ModuleFetcher;
 use qos_policy::{PolicyEngine, UriAllowList};
-use qos_qr::decode_qr_from_bytes;
+use qos_qr::{decode_qr_from_bytes, QrPayload};
 use qos_types::{ModuleDescriptor, QosError, StateKey, StateEntry};
 use qos_engine::engine::ExecutionEngine;
 use qos_engine::context::InvocationResult;
@@ -65,6 +65,10 @@ impl BootloaderPipeline {
     pub async fn load_from_qr(&self, qr_image_bytes: &[u8]) -> Result<LoadedModule, QosError> {
         // Stage 1: QR decode
         let payload = decode_qr_from_bytes(qr_image_bytes)?;
+        self.load_from_payload(&payload).await
+    }
+
+    pub async fn load_from_payload(&self, payload: &QrPayload) -> Result<LoadedModule, QosError> {
         info!(uri = %payload.uri, "QR payload decoded");
 
         // Stage 2: Build and validate ModuleDescriptor
@@ -143,8 +147,17 @@ impl BootloaderPipeline {
         qr_image_bytes: &[u8],
         engine: &ExecutionEngine,
     ) -> Result<InvocationResult, QosError> {
-        // 1. Decode, validate, fetch
-        let loaded = self.load_from_qr(qr_image_bytes).await?;
+        let payload = decode_qr_from_bytes(qr_image_bytes)?;
+        self.execute_parsed_payload(&payload, engine).await
+    }
+
+    pub async fn execute_parsed_payload(
+        &self,
+        payload: &QrPayload,
+        engine: &ExecutionEngine,
+    ) -> Result<InvocationResult, QosError> {
+        // 1. Validate, fetch
+        let loaded = self.load_from_payload(payload).await?;
 
         // 2. Fetch manifest and inject state
         let invocation_id = Uuid::new_v4();

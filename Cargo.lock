@@ -3126,6 +3126,7 @@ dependencies = [
  "mime_guess",
  "qos-bootloader",
  "qos-engine",
+ "qos-qr",
  "qos-state",
  "qos-types",
  "rust-embed",
@@ -3195,11 +3196,15 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap",
+ "hex",
  "qos-bootloader",
  "qos-sandbox",
  "qos-state",
  "qos-types",
+ "reqwest",
+ "serde",
  "serde_json",
+ "sha2",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -3285,6 +3290,7 @@ name = "qos-runtime"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "clap",
  "libp2p",
  "local-ip-address",
@@ -3299,6 +3305,7 @@ dependencies = [
  "qos-types",
  "qr2term",
  "serde",
+ "sled",
  "tokio",
  "toml",
  "tracing",
@@ -4232,6 +4239,13 @@ checksum = "8e1d1b10ced5ca923a1fcb8d03e96b8d3268065d724548c0211415ff6ac6bac4"
 dependencies = [
  "core-foundation-sys",
  "libc",
+]
+
+[[package]]
+name = "tactical_guestbook"
+version = "0.1.0"
+dependencies = [
+ "qos-sdk",
 ]
 
 [[package]]

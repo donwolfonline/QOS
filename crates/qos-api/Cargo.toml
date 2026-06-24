@@ -23,5 +23,6 @@ tracing-subscriber.workspace = true
 anyhow.workspace = true
 base64 = "0.22.1"
 qos-state = { version = "0.1.0", path = "../qos-state" }
+qos-qr = { version = "0.1.0", path = "../qos-qr" }
 rust-embed = "8.11.0"
 mime_guess = "2.0.5"

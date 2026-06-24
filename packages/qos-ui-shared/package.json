@@ -8,9 +8,10 @@
     "build": "tsc"
   },
   "dependencies": {
-    "tamagui": "^1.111.4",
     "@tamagui/config": "^1.111.4",
-    "@tamagui/core": "^1.111.4"
+    "@tamagui/core": "^1.111.4",
+    "tamagui": "^1.111.4",
+    "zustand": "^5.0.14"
   },
   "peerDependencies": {
     "react": "*",
@@ -19,7 +20,7 @@
     "react-native-svg": "*"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
-    "@types/react": "^19.0.0"
+    "@types/react": "^19.0.0",
+    "typescript": "^5.4.0"
   }
 }

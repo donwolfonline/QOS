@@ -210,7 +210,7 @@ async fn main() -> anyhow::Result<()> {
     info!("Q-OS runtime components initialized, building system context...");
 
     let ctx = QosSystemContext {
-        state_store: state,
+        state_store: state.clone(),
         sync_engine,
         execution_engine: engine,
         bootloader: Arc::new(bootloader),
@@ -228,12 +228,41 @@ async fn main() -> anyhow::Result<()> {
         bootloader: ctx.bootloader.clone(),
         execution_engine: ctx.execution_engine.clone(),
         auth_token: auth_token.clone(),
-        tx_telemetry: telemetry_tx,
+        tx_telemetry: telemetry_tx.clone(),
     };
 
     tokio::spawn(async move {
         if let Err(e) = qos_api::start_server(api_state).await {
             error!("qos-api server failed: {}", e);
+        }
+    });
+
+    // ── Start State Telemetry Stream ──────────────────────────────────────────
+    let mut state_subscriber = state.watch_all();
+    let state_telemetry_tx = telemetry_tx.clone();
+    
+    // Spawn a blocking task because iterating over the sled::Subscriber is blocking
+    tokio::task::spawn_blocking(move || {
+        for event in state_subscriber {
+            match event {
+                sled::Event::Insert { key, value } => {
+                    let key_str = String::from_utf8_lossy(&key);
+                    let val_str = String::from_utf8_lossy(&value);
+                    let payload = format!(
+                        r#"{{"type": "STATE_MUTATION", "key": "{}", "value": {}}}"#,
+                        key_str, val_str
+                    );
+                    let _ = state_telemetry_tx.send(payload);
+                }
+                sled::Event::Remove { key } => {
+                    let key_str = String::from_utf8_lossy(&key);
+                    let payload = format!(
+                        r#"{{"type": "STATE_REMOVE", "key": "{}"}}"#,
+                        key_str
+                    );
+                    let _ = state_telemetry_tx.send(payload);
+                }
+            }
         }
     });
 

@@ -38,7 +38,21 @@ pub async fn execute_handler(
     let result_future = if is_qos_package {
         state.bootloader.execute_package(&payload, &state.execution_engine).await
     } else {
-        state.bootloader.execute_qr(&payload, &state.execution_engine).await
+        // Try decoding as base64 JSON first
+        let parsed_json = std::str::from_utf8(&payload)
+            .ok()
+            .and_then(|text| {
+                let stripped = text.strip_prefix("qos-exec://").unwrap_or(text);
+                use base64::{Engine as _, engine::general_purpose::STANDARD};
+                STANDARD.decode(stripped).ok()
+            })
+            .and_then(|decoded| serde_json::from_slice::<qos_qr::QrPayload>(&decoded).ok());
+
+        if let Some(qr_payload) = parsed_json {
+            state.bootloader.execute_parsed_payload(&qr_payload, &state.execution_engine).await
+        } else {
+            state.bootloader.execute_qr(&payload, &state.execution_engine).await
+        }
     };
 
     match result_future {

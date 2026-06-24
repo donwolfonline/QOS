@@ -35,6 +35,7 @@ pub async fn start_server(state: ApiState) -> anyhow::Result<()> {
         .route("/api/v1/execute", post(routes::execute::execute_handler))
         .route("/api/v1/state/dump", get(routes::state::dump_handler))
         .route("/api/v1/state/edit", post(routes::state::edit_handler))
+        .route("/api/v1/broadcast", post(routes::broadcast::broadcast_handler))
         .layer(middleware::from_fn_with_state(state.clone(), auth::require_api_key));
 
     let app = Router::new()

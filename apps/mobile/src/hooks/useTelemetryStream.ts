@@ -63,6 +63,11 @@ export const useTelemetryStream = () => {
             (fields.peak_memory_bytes as number) || 0
           );
         }
+        
+        // 3. Edge State Mutations
+        if (data.type === 'STATE_MUTATION' && typeof data.key === 'string' && data.value !== undefined) {
+          useConnectionStore.getState().updateEdgeState(data.key, data.value);
+        }
       } catch (e) {
         // Ignore parsing errors for raw text logs
       }

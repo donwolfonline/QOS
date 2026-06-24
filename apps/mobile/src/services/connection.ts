@@ -65,5 +65,33 @@ export const ConnectionService = {
   disconnect: async () => {
     useConnectionStore.getState().clearConnection();
     await SecureStore.deleteItemAsync(SECURE_STORE_KEY);
+  },
+
+  /**
+   * Sends the trigger payload (e.g., qos-exec://...) to the Q-OS runtime.
+   */
+  executePayload: async (payload: string): Promise<any> => {
+    const state = useConnectionStore.getState();
+    if (!state.ip || !state.port || !state.token) {
+      throw new Error("Not connected to a QOS node");
+    }
+
+    const url = `http://${state.ip}:${state.port}/api/v1/execute`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'X-QOS-API-KEY': state.token,
+        'Content-Type': 'text/plain',
+      },
+      body: payload,
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Execution failed (${response.status}): ${errText}`);
+    }
+
+    return await response.json();
   }
 };

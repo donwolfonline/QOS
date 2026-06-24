@@ -1,0 +1,12 @@
+{
+  "name": "tactical_guestbook",
+  "version": "1.0.0",
+  "capabilities": {
+    "network": false,
+    "fs_read": false,
+    "fs_write": false,
+    "gpu": false,
+    "state_read": true,
+    "state_write": true
+  }
+}
