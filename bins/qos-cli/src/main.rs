@@ -9,6 +9,8 @@
 use anyhow::Context;
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
+use sha2::{Sha256, Digest};
+use qos_state::StateStore;
 
 /// Q-OS developer CLI.
 #[derive(Parser, Debug)]
@@ -43,6 +45,20 @@ enum Command {
     State {
         #[command(subcommand)]
         action: StateAction,
+    },
+    /// Install a resource from the registry.
+    Install {
+        #[command(subcommand)]
+        action: InstallAction,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+enum InstallAction {
+    /// Install a WASM module from the centralized registry.
+    Module {
+        /// Module name in the format `author/module_name`
+        name: String,
     },
 }
 
@@ -82,7 +98,67 @@ async fn main() -> anyhow::Result<()> {
         Command::State { action: StateAction::List } => {
             println!("TODO: list all state keys");
         }
+        Command::Install { action: InstallAction::Module { name } } => {
+            install_module(&name, &state).await?;
+        }
     }
 
+    Ok(())
+}
+
+async fn install_module(name: &str, state: &qos_state::SledStateStore) -> anyhow::Result<()> {
+    println!("Fetching module '{}' from registry...", name);
+    let client = reqwest::Client::builder().use_rustls_tls().build()?;
+    
+    let url = format!("https://q-os.io/api/registry/download?module={}", name);
+    let resp = client.get(&url).send().await?;
+    
+    if !resp.status().is_success() {
+        anyhow::bail!("Failed to download module: HTTP {}", resp.status());
+    }
+    
+    let expected_hash = match resp.headers().get("x-qos-sha256") {
+        Some(h) => h.to_str()?.to_string(),
+        None => anyhow::bail!("Registry did not provide an X-QOS-SHA256 header for validation"),
+    };
+    
+    let bytes = resp.bytes().await?;
+    
+    // Validate SHA-256
+    let mut hasher = Sha256::new();
+    hasher.update(&bytes);
+    let computed_hash = hex::encode(hasher.finalize());
+    
+    if computed_hash != expected_hash {
+        anyhow::bail!(
+            "Cryptographic validation failed! Expected {}, got {}",
+            expected_hash,
+            computed_hash
+        );
+    }
+    
+    println!("Validation successful (SHA-256: {})", computed_hash);
+    
+    // Save to library/
+    let lib_dir = PathBuf::from("library");
+    std::fs::create_dir_all(&lib_dir)?;
+    
+    let safe_name = name.replace("/", "_");
+    let file_path = lib_dir.join(format!("{}.qos", safe_name));
+    
+    std::fs::write(&file_path, &bytes)?;
+    println!("Saved to {:?}", file_path);
+    
+    // Register execution path in Sled state store
+    let key = qos_types::StateKey::new("system", "registry", name);
+    let entry = qos_types::StateEntry {
+        bytes: file_path.to_string_lossy().as_bytes().to_vec(),
+        vector_clock: std::collections::HashMap::new(),
+        last_modified: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)?.as_millis() as u64,
+    };
+    
+    state.set(&key, entry)?;
+    println!("Module registered in state store.");
+    
     Ok(())
 }

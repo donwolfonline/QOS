@@ -40,7 +40,25 @@ Once installed, interacting with Q-OS is designed to be seamless, physical, and 
 3. **Scan & Execute:** Point your mobile device's camera at the terminal's QR code. The app will securely beam your selected WASM payload/instructions to the edge node, executing them instantly within the sandbox!
 
 ---
+## Deployment to Vercel
 
+The Web Application (Admin Dashboard & Guest UI) is optimized for zero-config Vercel deployment straight from this Turborepo workspace.
+
+### Vercel CLI
+If you are deploying manually via the CLI, run:
+```bash
+vercel build --prod
+vercel deploy --prebuilt
+```
+
+### Dashboard Settings
+When connecting this repository directly to Vercel via Git:
+- **Root Directory**: Leave this empty / set to the monorepo root (`/`).
+- **Framework Preset**: Select `Next.js`.
+- **Build Command**: `pnpm run build:web` (or let Vercel auto-detect the turbo command).
+- **Output Directory**: Vercel will automatically detect `apps/web/.next` or `apps/web/out`.
+
+*Note: The `apps/web/next.config.ts` is already pre-configured with `transpilePackages: ['qos-ui-shared']` to ensure cross-workspace packages are seamlessly bundled.*
 ## 🚀 Developer Quick Start
 
 ### Prerequisites
@@ -126,6 +144,10 @@ QOS/
 └── bins/
     ├── qos-runtime        # The primary Edge Daemon binary
     └── qos-cli            # Developer CLI tools
+└── apps/
+    ├── web                # Admin Command Center and Guest Micro-UIs (Next.js)
+    ├── marketing          # Documentation Portal & Registry (Next.js)
+    └── mobile             # Mobile Controller App (React Native)
 ```
 
 ## 🤝 Contributing
