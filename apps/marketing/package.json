@@ -12,7 +12,7 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.41.0",
     "fuse.js": "^7.4.2",
-    "next": "15.3.3",
+    "next": "16.2.9",
     "qos-ui-shared": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
