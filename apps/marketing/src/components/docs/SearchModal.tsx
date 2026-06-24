@@ -25,7 +25,7 @@ export function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
   useEffect(() => {
     fetch("/docs-index.json")
       .then(res => res.json())
-      .then(data => {
+      .then((data: DocIndexItem[]) => {
         setIndex(data);
         const fuseInstance = new Fuse(data, {
           keys: ["title", "content", "category"],
