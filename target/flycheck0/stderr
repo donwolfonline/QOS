@@ -1,2 +1,0 @@
-warning: /Users/frederickdineen/qos/Cargo.toml: unused manifest key: workspace.dev-dependencies
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.68s
