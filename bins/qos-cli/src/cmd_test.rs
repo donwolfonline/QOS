@@ -123,7 +123,7 @@ async fn run_mesh(nodes: usize) -> Result<()> {
     println!("\n{}", "--- VERIFYING EVENTUAL CONSISTENCY ---".bold().magenta());
     let mut all_consistent = false;
     
-    for attempt in 0..10 { // up to 200ms (10 * 20ms)
+    for _ in 0..10 { // up to 200ms (10 * 20ms)
         tokio::time::sleep(Duration::from_millis(20)).await;
         
         let mut consistent_nodes = 1; // node 0 is consistent

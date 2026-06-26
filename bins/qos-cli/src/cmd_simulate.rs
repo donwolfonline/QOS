@@ -261,7 +261,7 @@ async fn run_mesh(node_count: usize, module: Option<PathBuf>) -> Result<()> {
                         let body_text = resp.text().await.unwrap_or_default();
                         println!(
                             "  {} HTTP {} — {}",
-                            if status.is_success() { "✔".fg_rgb::<0,255,65>() } else { "✘".fg_rgb::<255,50,50>() },
+                            if status.is_success() { "✔".fg_rgb::<0,255,65>().to_string() } else { "✘".fg_rgb::<255,50,50>().to_string() },
                             status,
                             body_text,
                         );
