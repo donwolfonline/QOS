@@ -70,11 +70,13 @@ async fn run_mesh(node_count: usize, module: Option<PathBuf>) -> Result<()> {
         let h = boot_node(i, count).await?;
 
         let status_color = format!("Node {:02}", i);
+        let peer_id_short = h.peer_id.to_string();
+        let peer_id_short = &peer_id_short[..12];
         println!(
             "  {} {} | peer_id={} | api=:{} | state=/tmp/qos_sim_{}",
             "✔".fg_rgb::<0, 255, 65>(),
             status_color.fg_rgb::<0, 212, 255>().bold(),
-            h.peer_id.to_string()[..12].fg_rgb::<199, 146, 234>(),
+            peer_id_short.fg_rgb::<199, 146, 234>(),
             h.api_port,
             i,
         );
@@ -416,6 +418,7 @@ async fn boot_node(id: usize, _total: usize) -> Result<NodeHandle> {
     let (sync_engine, network_state) =
         StateSyncEngine::spawn(swarm, Arc::clone(&state), telemetry_tx.clone())
             .await
+            .map_err(|e| anyhow::anyhow!("{e}"))
             .context("Spawning StateSyncEngine for simulated node")?;
 
     // Capture the resolved listen address once the swarm binds

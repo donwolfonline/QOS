@@ -2,7 +2,7 @@
 
 use qos_types::{QosError, StateKey, StateEntry, SyncReport};
 use serde_json;
-use tracing::{debug, warn};
+use tracing::debug;
 
 /// A `sled`-backed state store.
 /// All keys are serialised as UTF-8 strings; values are JSON-encoded `StateValue`.
