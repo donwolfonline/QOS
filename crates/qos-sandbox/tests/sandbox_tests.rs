@@ -39,6 +39,7 @@ mod tests {
             entrypoint: "run".into(),
             ttl_secs: None,
             manifest_uri: None,
+            requires_license: false,
         };
 
         let handle = sandbox
@@ -74,6 +75,7 @@ mod tests {
             entrypoint: "run".into(),
             ttl_secs: None,
             manifest_uri: None,
+            requires_license: false,
         };
 
         // Give it huge fuel but a 1-second wall-clock timeout

@@ -5,6 +5,10 @@
       "dependsOn": ["^build"],
       "outputs": [".next/**", "dist/**", "build/**"]
     },
+    "//#build:rust": {
+      "inputs": ["crates/**/*.rs", "bins/**/*.rs", "Cargo.toml", "Cargo.lock"],
+      "outputs": ["target/release/qos-runtime", "target/release/qos-cli", "target/release/qos-bundler"]
+    },
     "dev": {
       "cache": false,
       "persistent": true

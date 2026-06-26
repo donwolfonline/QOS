@@ -71,9 +71,9 @@ pub struct EngineConfig {
 impl Default for EngineConfig {
     fn default() -> Self {
         Self {
-            fuel_limit: 1_000_000_000,
-            wall_clock_timeout: Duration::from_secs(30),
-            memory_limit_bytes: 64 * 1024 * 1024, // 64 MiB
+            fuel_limit: 15_000,
+            wall_clock_timeout: Duration::from_millis(50),
+            memory_limit_bytes: 16 * 1024 * 1024, // 16 MiB
             registry_capacity: 64,
             event_payload_max_bytes: 64 * 1024, // 64 KiB
             event_topic_max_bytes: 256,
@@ -129,10 +129,18 @@ impl ExecutionEngine {
     ) -> Result<Self, QosError> {
         let mut wasm_config = Config::new();
         wasm_config.consume_fuel(true);
+        wasm_config.epoch_interruption(true);
         wasm_config.parallel_compilation(true);
 
         let wasm_engine = Engine::new(&wasm_config)
             .map_err(|e| QosError::Internal(format!("Wasmtime engine init: {e}")))?;
+
+        // Spawn a background thread to tick the epoch every 5ms for tight wall-clock interruption
+        let tick_engine = wasm_engine.clone();
+        std::thread::spawn(move || loop {
+            std::thread::sleep(Duration::from_millis(5));
+            tick_engine.increment_epoch();
+        });
 
         let registry = ModuleRegistry::new(wasm_engine, config.registry_capacity);
 
@@ -185,7 +193,7 @@ impl ExecutionEngine {
         descriptor: &ModuleDescriptor,
         wasm_bytes: &[u8],
     ) -> InvocationResult {
-        let start_time = Instant::now();
+        let start_time = std::time::Instant::now();
         let ctx = InvocationContext::new(
             invocation_id,
             descriptor.sha256.clone(),
@@ -208,7 +216,7 @@ impl ExecutionEngine {
         let wasm_bytes = wasm_bytes.to_vec();
 
         let task = tokio::task::spawn_blocking(move || {
-            run_sync(invocation_id, &descriptor, &wasm_bytes, registry, state, event_bus, config)
+            run_sync(invocation_id, start_time, &descriptor, &wasm_bytes, registry, state, event_bus, config)
         });
 
         match timeout(self.config.wall_clock_timeout, task).await {
@@ -240,6 +248,7 @@ impl ExecutionEngine {
 /// The synchronous execution body — runs inside `spawn_blocking`.
 fn run_sync(
     invocation_id: Uuid,
+    start_time: std::time::Instant,
     descriptor: &ModuleDescriptor,
     wasm_bytes: &[u8],
     registry: ModuleRegistry,
@@ -252,6 +261,47 @@ fn run_sync(
         descriptor.sha256.clone(),
         descriptor.entrypoint.clone(),
     );
+
+    // ── Step 0: Security & License Checks ─────────────────────────────────────
+    if let (Some(sig), Some(pubkey)) = (&descriptor.signature, &descriptor.signer_pubkey) {
+        let hash_bytes = match hex::decode(&descriptor.sha256) {
+            Ok(b) => b,
+            Err(e) => {
+                return ctx.finish(
+                    -1,
+                    0,
+                    MemoryStats { limit_bytes: config.memory_limit_bytes, peak_bytes: 0, growth_denials: 0 },
+                    InvocationStatus::SecurityViolation { reason: format!("invalid module hash hex: {}", e) },
+                );
+            }
+        };
+
+        if let Err(e) = qos_crypto::verify_module_signature(&hash_bytes, sig, pubkey) {
+            return ctx.finish(
+                -1,
+                0,
+                MemoryStats { limit_bytes: config.memory_limit_bytes, peak_bytes: 0, growth_denials: 0 },
+                InvocationStatus::SecurityViolation { reason: e.to_string() },
+            );
+        }
+    }
+
+    if descriptor.requires_license {
+        let license_key = StateKey::new("system", "licenses", &descriptor.sha256);
+        let has_license = match state.get(&license_key) {
+            Ok(Some(_)) => true,
+            _ => false,
+        };
+
+        if !has_license {
+            return ctx.finish(
+                -1,
+                0,
+                MemoryStats { limit_bytes: config.memory_limit_bytes, peak_bytes: 0, growth_denials: 0 },
+                InvocationStatus::Unlicensed,
+            );
+        }
+    }
 
     // ── Step 1: Compile / cache lookup ────────────────────────────────────────
     let module = match registry.get_or_compile(&descriptor.sha256, wasm_bytes) {
@@ -282,7 +332,7 @@ fn run_sync(
     let mut store = Store::new(registry.engine(), store_data);
 
     // Fuel
-    if let Err(e) = store.set_fuel(config.fuel_limit) {
+    if let Err(e) = store.set_fuel(15_000) {
         return ctx.finish(
             -1,
             0,
@@ -290,6 +340,10 @@ fn run_sync(
             InvocationStatus::EngineError { reason: format!("set_fuel: {e}") },
         );
     }
+
+    // Epoch deadline (tick every 5ms)
+    let ticks = (config.wall_clock_timeout.as_millis() / 5).max(1) as u64;
+    store.set_epoch_deadline(ticks);
 
     // Memory guard (closure returns &mut dyn ResourceLimiter)
     store.limiter(|d: &mut EngineStoreData| &mut d.memory_guard as &mut dyn wasmtime::ResourceLimiter);
@@ -336,7 +390,7 @@ fn run_sync(
     // ── Step 5: Collect metrics + events ──────────────────────────────────────
     let fuel_consumed = {
         let remaining = store.get_fuel().unwrap_or(0);
-        config.fuel_limit.saturating_sub(remaining)
+        15_000u64.saturating_sub(remaining)
     };
 
     let memory_stats = MemoryStats::from(&store.data().memory_guard);
@@ -352,12 +406,15 @@ fn run_sync(
     // ── Step 6: Return result ─────────────────────────────────────────────────
     match call_result {
         Ok(exit_code) => {
+            let latency_us = start_time.elapsed().as_micros() as u64;
             tracing::info!(
                 invocation = %invocation_id,
+                module = %descriptor.sha256,
                 exit_code,
                 fuel_consumed,
                 peak_memory_bytes = memory_stats.peak_bytes,
                 events = ctx.events.len(),
+                latency_us,
                 "ExecutionEngine: invocation complete"
             );
             ctx.finish(exit_code, fuel_consumed, memory_stats, InvocationStatus::Success)

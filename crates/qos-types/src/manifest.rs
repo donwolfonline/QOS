@@ -26,6 +26,15 @@ pub struct QosManifest {
     /// Initial state variables to inject into the state store.
     #[serde(default)]
     pub initial_state: HashMap<String, String>,
+    /// Ed25519 Public Key of the author.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub public_key: Option<String>,
+    /// Cryptographic signature of the compiled WASM payload hash.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub signature: Option<String>,
+    /// Indicates whether the runtime should enforce a valid Local License Store receipt.
+    #[serde(default)]
+    pub requires_license: bool,
 }
 
 fn default_entrypoint() -> String {

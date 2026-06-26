@@ -26,10 +26,11 @@ serde               = { workspace = true }
 toml                = { workspace = true }
 anyhow              = { workspace = true }
 qos-state-sync = { version = "0.1.0", path = "../../crates/qos-state-sync" }
-libp2p = { version = "0.56.0", features = ["macros", "tcp", "tokio", "yamux", "noise", "mdns", "gossipsub"] }
+libp2p = { version = "0.56.0", features = ["macros", "tcp", "tokio", "yamux", "noise", "mdns", "gossipsub", "kad", "dns", "autonat", "relay", "dcutr", "identify", "ping"] }
 async-trait.workspace = true
 sled.workspace = true
 qos-api = { version = "0.1.0", path = "../../crates/qos-api" }
 uuid = { workspace = true, features = ["v4"] }
 qr2term = "0.3.3"
 local-ip-address = "0.6.13"
+serde_json.workspace = true

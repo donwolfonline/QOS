@@ -1,15 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 
 // ─── Typing Effect ───────────────────────────────────────────────────────────
 const PHRASES = [
-  'Zero-Latency Edge Execution.',
-  'Serverless Physical Infrastructure.',
-  'Real-time CRDT Synchronization.',
-  'WASM Payloads. Physical Space.',
+  'Sub-millisecond Cold Starts.',
+  'Unbreakable Mesh Synchronization.',
+  'Write in Rust, Deploy Anywhere.',
+  'Cryptographic Code Ownership.',
 ];
 function TypingEffect() {
   const [phraseIdx, setPhraseIdx] = useState(0);
@@ -48,15 +48,15 @@ const VALUE_PROPS = [
   {
     icon: (
       <svg className="w-8 h-8" viewBox="0 0 32 32" fill="none">
-        <circle cx="16" cy="16" r="14" stroke="#00ff41" strokeWidth="1.5" strokeDasharray="4 2" className="animate-[spin_20s_linear_infinite]"/>
-        <path d="M10 16h12M16 10v12" stroke="#00ff41" strokeWidth="2" strokeLinecap="round"/>
-        <circle cx="16" cy="16" r="3" fill="#00ff41"/>
+        <rect x="4" y="8" width="24" height="16" rx="2" stroke="#00ff41" strokeWidth="1.5"/>
+        <path d="M10 16c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6" stroke="#00ff41" strokeWidth="1.5" strokeLinecap="round"/>
+        <circle cx="16" cy="16" r="2" fill="#00ff41"/>
       </svg>
     ),
-    stat: '$0',
-    statLabel: 'Cloud Spend',
-    title: 'Drop AWS Bills to $0',
-    body: 'Q-OS runs entirely on hardware you already own. No EC2 instances, no Lambda invocations, no egress fees. Your edge node is your server — local, sovereign, free.',
+    stat: 'WASM',
+    statLabel: 'Universal Target',
+    title: 'Write in Any Language (WASM)',
+    body: 'Compile Rust, Go, AssemblyScript, or JS into tightly sandboxed WebAssembly modules. Execute safely on edge nodes with sub-millisecond cold starts.',
     color: '#00ff41',
   },
   {
@@ -70,195 +70,127 @@ const VALUE_PROPS = [
         <circle cx="16" cy="24" r="2" fill="#00d4ff"/>
       </svg>
     ),
-    stat: '100%',
-    statLabel: 'Uptime Offline',
-    title: 'Unbreakable Local Mesh',
-    body: 'CRDT-powered state syncs instantly across all peers on your LAN. Broadband goes down — your venue keeps running. Guests check in, staff get updates, business continues.',
+    stat: 'P2P',
+    statLabel: 'Routing Protocol',
+    title: 'Global DHT Discovery (libp2p)',
+    body: 'Powered by libp2p and Kademlia DHT. Edge nodes discover each other instantly across NATs and firewalls. Unbreakable mesh synchronization without central coordination.',
     color: '#00d4ff',
   },
   {
     icon: (
       <svg className="w-8 h-8" viewBox="0 0 32 32" fill="none">
-        <rect x="4" y="8" width="24" height="16" rx="2" stroke="#ff7a2f" strokeWidth="1.5"/>
-        <path d="M10 16c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6" stroke="#ff7a2f" strokeWidth="1.5" strokeLinecap="round"/>
-        <circle cx="16" cy="16" r="2" fill="#ff7a2f"/>
+        <circle cx="16" cy="16" r="14" stroke="#ff7a2f" strokeWidth="1.5" strokeDasharray="4 2" className="animate-[spin_20s_linear_infinite]"/>
+        <path d="M10 16h12M16 10v12" stroke="#ff7a2f" strokeWidth="2" strokeLinecap="round"/>
+        <circle cx="16" cy="16" r="3" fill="#ff7a2f"/>
       </svg>
     ),
-    stat: '< 2ms',
-    statLabel: 'Execution Time',
-    title: 'Write Rust, Deploy to the Floor',
-    body: 'Compile any logic to WASM and hot-deploy it to physical QR codes without reprinting. Menu change? Price update? VIP flow? Push it live in seconds from the Admin HUD.',
+    stat: 'Ed25519',
+    statLabel: 'Signatures',
+    title: 'Cryptographic Monetization',
+    body: 'Package and sell your modules. Q-OS enforces Ed25519 cryptographic licensing natively on the edge. License validation works 100% offline — no API keys or Stripe dependencies.',
     color: '#ff7a2f',
   },
 ];
 
-// ─── Use Case Tabs ────────────────────────────────────────────────────────────
-const USE_CASES = [
-  {
-    id: 'restaurants',
-    label: 'Restaurants',
-    icon: '🍽️',
-    headline: 'From QR to Checkout in 8 Seconds',
-    sub: 'Replace paper menus, POS tablets, and waitlist apps with a single WASM module. Guests scan, order, and pay — all within their native browser, zero app install.',
-    metrics: [
-      { label: 'Table Turn Speed', before: '42 min', after: '28 min', color: '#00ff41' },
-      { label: 'Staff Interruptions / Hr', before: '34', after: '8', color: '#00ff41' },
-      { label: 'POS System Cost / Mo', before: '$320', after: '$0', color: '#00ff41' },
-    ],
-    terminal: [
-      { type: 'cmd', text: '$ qos module deploy ./happy_hour_menu.wasm --table all' },
-      { type: 'ok',  text: '[OK] Module deployed to 12 tables simultaneously.' },
-      { type: 'ok',  text: '[MESH] 3 guests already interacting with new flow.' },
-    ],
-    color: '#00ff41',
-  },
-  {
-    id: 'retail',
-    label: 'Retail',
-    icon: '🛍️',
-    headline: 'Real-Time Inventory. Zero Cloud.',
-    sub: 'Every shelf becomes a sensor endpoint. Q-OS syncs stock levels, pricing, and promotions across the floor in milliseconds — without a single cloud API call.',
-    metrics: [
-      { label: 'Inventory Sync Latency', before: '8 min', after: '< 50ms', color: '#00d4ff' },
-      { label: 'Out-of-Stock Events / Day', before: '18', after: '3', color: '#00d4ff' },
-      { label: 'Cloud API Spend / Mo', before: '$890', after: '$0', color: '#00d4ff' },
-    ],
-    terminal: [
-      { type: 'cmd', text: '$ qos module deploy ./inventory_sync.wasm --zone shelf-a' },
-      { type: 'ok',  text: '[STATE] 847 SKUs indexed to local Sled store.' },
-      { type: 'ok',  text: '[MESH] Realtime price broadcast active.' },
-    ],
-    color: '#00d4ff',
-  },
-  {
-    id: 'events',
-    label: 'Events',
-    icon: '🎟️',
-    headline: 'VIP Check-In at Light Speed',
-    sub: 'No app downloads, no cell signal dependencies. Guests scan a QR, WASM validates their token locally, and the admin\'s floor plan lights up green — all in under 2ms.',
-    metrics: [
-      { label: 'Check-In Speed', before: '45 sec', after: '< 2 sec', color: '#facc15' },
-      { label: 'Queue Length (avg)', before: '28 guests', after: '2 guests', color: '#facc15' },
-      { label: 'Infrastructure Cost', before: '$1,200', after: '$0', color: '#facc15' },
-    ],
-    terminal: [
-      { type: 'cmd', text: '$ qos module deploy ./vip_checkin.wasm --event gala_2026' },
-      { type: 'ok',  text: '[WASM] 2,400 tokens loaded into local state.' },
-      { type: 'ok',  text: '[MESH] Live floor plan ready. 0ms cloud round-trip.' },
-    ],
-    color: '#facc15',
-  },
-];
+// ─── Terminal Animation ───────────────────────────────────────────────────────
+function TerminalAnimation() {
+  const [leftLines, setLeftLines] = useState<string[]>([]);
+  const [rightLines, setRightLines] = useState<string[]>([]);
 
-// ─── Dashboard Mockup ─────────────────────────────────────────────────────────
-function DashboardMockup({ useCase }: { useCase: typeof USE_CASES[0] }) {
-  const tables = [1, 2, 3, 4, 5, 6, 7, 8];
-  const occupied = [1, 3, 5, 7];
+  useEffect(() => {
+    const buildSequence = [
+      { text: "$ qos build --release", delay: 500 },
+      { text: "   Compiling qos-module v0.1.0 (/app)", delay: 1200 },
+      { text: "   Compiling serde v1.0.197", delay: 1500 },
+      { text: "   Compiling wasm-bindgen v0.2.92", delay: 1800 },
+      { text: "    Finished release [optimized] target(s) in 2.34s", delay: 2800 },
+      { text: "$ qos deploy target/wasm32-unknown-unknown/release/module.qos", delay: 3500 },
+      { text: "🚀 Deploying payload (42 KB)...", delay: 4000 },
+      { text: "✅ Broadcasted to DHT network.", delay: 4500 }
+    ];
+
+    const meshSequence = [
+      { text: "[MESH] Starting libp2p listener on 0.0.0.0:4001", delay: 1000 },
+      { text: "[DHT] Connected to bootstrap node 12D3KooW...", delay: 2000 },
+      { text: "[PUBSUB] Subscribed to topic 'qos.modules'", delay: 2500 },
+      { text: "[SYNC] Received new CRDT state vector", delay: 3000 },
+      { text: "[MESH] 📥 Incoming module detected: module.qos", delay: 4600 },
+      { text: "[WASM] Validating Ed25519 signature...", delay: 4800 },
+      { text: "[WASM] Signature verified. Instantiating memory.", delay: 5200 },
+      { text: "[EXEC] Module 'module.qos' active. Latency: 0.8ms", delay: 5500 }
+    ];
+
+    const timeouts: NodeJS.Timeout[] = [];
+
+    buildSequence.forEach(({ text, delay }) => {
+      timeouts.push(setTimeout(() => setLeftLines(prev => [...prev, text]), delay));
+    });
+
+    meshSequence.forEach(({ text, delay }) => {
+      timeouts.push(setTimeout(() => setRightLines(prev => [...prev, text]), delay));
+    });
+
+    return () => timeouts.forEach(clearTimeout);
+  }, []);
+
   return (
-    <motion.div
-      key={useCase.id}
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      transition={{ duration: 0.4 }}
-      className="rounded-2xl bg-[#050505] border overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.8)]"
-      style={{ borderColor: useCase.color + '30' }}
-    >
-      {/* Window chrome */}
-      <div className="bg-[#111] px-4 py-3 border-b flex items-center gap-3" style={{ borderColor: useCase.color + '20' }}>
-        <div className="flex gap-1.5">
-          <span className="w-3 h-3 rounded-full bg-[#ff003c]/80" />
-          <span className="w-3 h-3 rounded-full bg-[#facc15]/80" />
-          <span className="w-3 h-3 rounded-full bg-[#00ff41]/80" />
-        </div>
-        <span className="flex-1 text-center font-mono-code text-[10px] tracking-widest uppercase" style={{ color: useCase.color + '60' }}>
-          Q-OS Admin // {useCase.label} Mode
-        </span>
-        <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: useCase.color }} />
-      </div>
-
-      <div className="p-5 grid grid-cols-5 gap-4 min-h-[340px]">
-        {/* Floor Grid */}
-        <div className="col-span-3 flex flex-col gap-3">
-          <p className="font-mono-code text-[10px] tracking-widest uppercase opacity-50" style={{ color: useCase.color }}>
-            &gt;_ Live Floor Plan
-          </p>
-          <div className="grid grid-cols-4 gap-2 flex-1">
-            {tables.map(t => {
-              const isOcc = occupied.includes(t);
-              return (
-                <motion.div
-                  key={t}
-                  animate={{ borderColor: isOcc ? useCase.color : 'rgba(255,255,255,0.08)', backgroundColor: isOcc ? useCase.color + '10' : '#0a0a0a', boxShadow: isOcc ? `0 0 12px ${useCase.color}30` : 'none' }}
-                  transition={{ duration: 0.5 }}
-                  className="rounded-lg border-2 p-2 flex flex-col items-center justify-center aspect-square"
-                >
-                  <span className="font-mono-code text-[10px] font-bold" style={{ color: isOcc ? useCase.color : 'rgba(255,255,255,0.2)' }}>
-                    {String(t).padStart(2,'0')}
-                  </span>
-                  {isOcc && <span className="w-1.5 h-1.5 rounded-full mt-1 animate-pulse" style={{ background: useCase.color }} />}
-                </motion.div>
-              );
-            })}
+    <div className="grid lg:grid-cols-2 gap-6 items-start w-full">
+      {/* Left Pane - Builder */}
+      <div className="rounded-xl bg-[#050505] border border-[#00ff41]/20 shadow-[0_0_40px_rgba(0,255,65,0.1)] overflow-hidden">
+        <div className="bg-[#111] px-4 py-2 border-b border-[#00ff41]/10 flex items-center gap-2">
+          <div className="flex gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#ff003c]/80" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#facc15]/80" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#00ff41]/80" />
           </div>
+          <span className="font-mono-code text-[10px] text-gray-500 ml-2">builder@dev:~</span>
         </div>
-
-        {/* Terminal Feed */}
-        <div className="col-span-2 flex flex-col gap-2">
-          <p className="font-mono-code text-[10px] tracking-widest uppercase opacity-50" style={{ color: useCase.color }}>&gt;_ Feed</p>
-          <div className="flex-1 bg-[#0a0a0a] rounded-lg p-3 border flex flex-col gap-2" style={{ borderColor: useCase.color + '15' }}>
-            {useCase.terminal.map((line, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.25 }}
-                className="font-mono-code text-[10px] leading-relaxed"
-              >
-                {line.type === 'cmd'
-                  ? <><span className="text-[#00d4ff] mr-1">$</span><span className="text-white">{line.text.slice(2)}</span></>
-                  : <><span className="opacity-40 mr-1">&gt;</span><span style={{ color: useCase.color }}>{line.text}</span></>
-                }
-              </motion.div>
-            ))}
-            <div className="flex items-center gap-1 mt-auto">
-              <span className="text-[#00d4ff] font-mono-code text-[10px]">$</span>
-              <span className="w-1.5 h-3 animate-pulse" style={{ background: useCase.color }} />
-            </div>
-          </div>
-
-          {/* Metrics mini-cards */}
-          <div className="flex flex-col gap-1.5">
-            {useCase.metrics.slice(0, 2).map(m => (
-              <div key={m.label} className="flex items-center justify-between bg-[#0a0a0a] rounded-lg px-3 py-2 border" style={{ borderColor: useCase.color + '15' }}>
-                <span className="font-mono-code text-[9px] text-gray-600 truncate">{m.label}</span>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="font-mono-code text-[9px] text-gray-600 line-through">{m.before}</span>
-                  <span className="font-mono-code text-[10px] font-bold" style={{ color: m.color }}>{m.after}</span>
-                </div>
-              </div>
-            ))}
+        <div className="p-5 font-mono-code text-[12px] text-gray-300 min-h-[240px] flex flex-col gap-1.5 text-left">
+          {leftLines.map((line, i) => (
+            <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={line.startsWith('$') ? 'text-[#00ff41] font-bold mt-2' : line.startsWith('✅') || line.startsWith('🚀') ? 'text-white' : 'text-gray-400'}>
+              {line}
+            </motion.div>
+          ))}
+          <div className="mt-1 flex items-center">
+            <span className="w-2 h-4 bg-[#00ff41] animate-pulse" />
           </div>
         </div>
       </div>
-    </motion.div>
+
+      {/* Right Pane - Mesh Node */}
+      <div className="rounded-xl bg-[#050505] border border-[#00d4ff]/20 shadow-[0_0_40px_rgba(0,212,255,0.1)] overflow-hidden">
+        <div className="bg-[#111] px-4 py-2 border-b border-[#00d4ff]/10 flex items-center gap-2">
+          <div className="flex gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#ff003c]/80" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#facc15]/80" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#00ff41]/80" />
+          </div>
+          <span className="font-mono-code text-[10px] text-[#00d4ff]/60 ml-2">mesh_node_eu_west_1</span>
+        </div>
+        <div className="p-5 font-mono-code text-[12px] text-gray-300 min-h-[240px] flex flex-col gap-1.5 text-left">
+          {rightLines.map((line, i) => (
+            <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={line.includes('[WASM]') || line.includes('[EXEC]') ? 'text-[#00d4ff]' : 'text-gray-400'}>
+              {line}
+            </motion.div>
+          ))}
+          <div className="mt-1 flex items-center">
+            <span className="w-2 h-4 bg-[#00d4ff] animate-pulse" />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function HomePage() {
-  const [activeTab, setActiveTab] = useState(0);
-
   return (
     <div className="min-h-screen bg-[#0a0a0a] overflow-x-hidden">
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
       <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-24 pb-20">
-        {/* Dot grid */}
         <div className="absolute inset-0 opacity-[0.18]" style={{ backgroundImage: 'radial-gradient(rgba(0,212,255,0.5) 1px, transparent 1px)', backgroundSize: '36px 36px' }} />
-        {/* Radial darken at edges */}
         <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 50%, transparent 30%, #0a0a0a 100%)' }} />
-        {/* Green ambient glow */}
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] rounded-full bg-[#00ff41]/4 blur-[140px] pointer-events-none" />
 
         <div className="relative z-10 max-w-5xl mx-auto flex flex-col items-center gap-7">
@@ -266,22 +198,20 @@ export default function HomePage() {
           <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
             className="inline-flex items-center gap-2 border border-[#00ff41]/30 bg-[#00ff41]/5 rounded-full px-4 py-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#00ff41] animate-pulse" />
-            <span className="font-mono-code text-[#00ff41] text-[11px] tracking-widest uppercase">Public Alpha — Free to Deploy</span>
+            <span className="font-mono-code text-[#00ff41] text-[11px] tracking-widest uppercase">Developer Preview Live</span>
           </motion.div>
 
           {/* Headline */}
           <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.7 }}
             className="text-5xl md:text-7xl xl:text-[88px] font-black tracking-tight leading-[0.95] font-mono-code">
-            <span className="text-white">The End of</span><br />
-            <span className="text-gradient-green">Cloud Latency.</span>
+            <span className="text-white">The Serverless</span><br />
+            <span className="text-gradient-green">Edge Protocol.</span>
           </motion.h1>
 
           {/* Sub-headline */}
           <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.6 }}
-            className="text-xl md:text-2xl text-gray-400 max-w-2xl leading-relaxed font-light">
-            Turn your physical locations into{' '}
-            <span className="text-white font-medium">serverless compute nodes.</span>
-            {' '}Zero cloud costs, absolute real-time synchronization.
+            className="text-xl md:text-2xl text-gray-400 max-w-3xl leading-relaxed font-light">
+            Deploy WebAssembly modules directly to the physical floor. <span className="text-white font-medium">Zero cloud costs, sub-millisecond execution, and unbreakable P2P mesh synchronization.</span>
           </motion.p>
 
           {/* Typing effect */}
@@ -295,11 +225,11 @@ export default function HomePage() {
             className="flex flex-col sm:flex-row items-center gap-4 mt-2">
             <Link href="/developers"
               className="px-8 py-4 text-sm font-bold font-mono-code text-black bg-[#00ff41] rounded-xl tracking-widest uppercase shadow-[0_0_35px_rgba(0,255,65,0.4)] hover:shadow-[0_0_55px_rgba(0,255,65,0.6)] hover:scale-105 active:scale-100 transition-all duration-200">
-              Start Building — Free
+              Read the Docs
             </Link>
-            <Link href="/features"
+            <Link href="https://github.com/qos/qos" target="_blank"
               className="px-8 py-4 text-sm font-bold font-mono-code text-[#00d4ff] border border-[#00d4ff]/35 rounded-xl tracking-widest uppercase hover:border-[#00d4ff]/70 hover:bg-[#00d4ff]/5 hover:shadow-[0_0_20px_rgba(0,212,255,0.12)] transition-all duration-200">
-              See All Features →
+              View Source →
             </Link>
           </motion.div>
 
@@ -309,8 +239,8 @@ export default function HomePage() {
             {[
               { v: '< 2ms', l: 'Cold Start', c: '#00d4ff' },
               { v: '$0', l: 'Cloud Cost', c: '#00ff41' },
-              { v: '100%', l: 'Works Offline', c: '#00ff41' },
-              { v: 'WASM', l: 'Sandbox', c: '#00d4ff' },
+              { v: '100%', l: 'P2P Uptime', c: '#00ff41' },
+              { v: 'WASM', l: 'Execution', c: '#00d4ff' },
             ].map(s => (
               <div key={s.l} className="flex flex-col items-center gap-1">
                 <span className="font-mono-code text-2xl md:text-3xl font-black" style={{ color: s.c }}>{s.v}</span>
@@ -324,7 +254,7 @@ export default function HomePage() {
       {/* ── MARQUEE ───────────────────────────────────────────────────────────── */}
       <section className="py-10 border-y border-[#00d4ff]/8 overflow-hidden select-none">
         <p className="text-center font-mono-code text-[10px] tracking-widest text-gray-700 uppercase mb-6">
-          Cloud services your team no longer needs
+          Legacy Cloud Dependencies Eliminated
         </p>
         <div className="relative">
           <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-[#0a0a0a] to-transparent z-10 pointer-events-none" />
@@ -341,14 +271,30 @@ export default function HomePage() {
         <style>{`@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }`}</style>
       </section>
 
-      {/* ── VALUE PROPS (CTO Pitch) ────────────────────────────────────────── */}
+      {/* ── DEVELOPER TERMINAL (Replaces Use Cases) ─────────────────────────── */}
+      <section className="py-32 px-6 relative">
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(rgba(0,212,255,0.3) 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
+        <div className="max-w-6xl mx-auto relative z-10">
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-100px' }}
+            className="text-center mb-16">
+            <p className="font-mono-code text-[#00d4ff] text-[11px] tracking-widest uppercase mb-4">&gt;_ Real-Time Execution</p>
+            <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight">
+              Compile locally.<br /><span className="text-gradient-blue">Synchronize globally.</span>
+            </h2>
+          </motion.div>
+
+          <TerminalAnimation />
+        </div>
+      </section>
+
+      {/* ── VALUE PROPS (Dev Pitch) ────────────────────────────────────────── */}
       <section className="py-32 px-6">
         <div className="max-w-6xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-100px' }}
             className="text-center mb-20">
-            <p className="font-mono-code text-[#00d4ff] text-[11px] tracking-widest uppercase mb-4">&gt;_ The CTO Pitch</p>
+            <p className="font-mono-code text-[#00d4ff] text-[11px] tracking-widest uppercase mb-4">&gt;_ Core Architecture</p>
             <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight">
-              Why your engineers will <span className="text-gradient-green">love this.</span>
+              Engineered for the <span className="text-gradient-green">physical layer.</span>
             </h2>
           </motion.div>
 
@@ -361,7 +307,6 @@ export default function HomePage() {
                 className="relative p-8 rounded-2xl bg-[#111111] border border-[#00d4ff]/12 hover:border-[#00d4ff]/28 transition-all duration-300 group overflow-hidden flex flex-col gap-5">
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                   style={{ background: `radial-gradient(ellipse at 50% 0%, ${vp.color}0d, transparent 70%)` }} />
-                {/* Stat */}
                 <div className="flex items-start justify-between">
                   <div className="p-3 rounded-xl border" style={{ borderColor: vp.color + '30', background: vp.color + '0d' }}>
                     {vp.icon}
@@ -381,77 +326,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── USE CASES (Tabbed) ────────────────────────────────────────────────── */}
-      <section className="py-32 px-6 relative">
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(rgba(0,212,255,0.3) 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
-        <div className="max-w-6xl mx-auto relative z-10">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-100px' }}
-            className="text-center mb-16">
-            <p className="font-mono-code text-[#00d4ff] text-[11px] tracking-widest uppercase mb-4">&gt;_ Use Cases</p>
-            <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight">
-              One protocol.<br /><span className="text-gradient-blue">Every physical space.</span>
-            </h2>
-          </motion.div>
-
-          {/* Tab pills */}
-          <div className="flex flex-wrap justify-center gap-3 mb-12">
-            {USE_CASES.map((uc, i) => (
-              <button key={uc.id} onClick={() => setActiveTab(i)}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-mono-code text-sm tracking-wide transition-all duration-300 border ${
-                  activeTab === i
-                    ? 'text-black font-bold scale-105'
-                    : 'bg-transparent text-gray-500 hover:text-gray-300 border-[#00d4ff]/15 hover:border-[#00d4ff]/35'
-                }`}
-                style={activeTab === i ? { background: uc.color, borderColor: uc.color, boxShadow: `0 0 20px ${uc.color}40` } : {}}>
-                <span>{uc.icon}</span>
-                {uc.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Tab content */}
-          <AnimatePresence mode="wait">
-            <motion.div key={activeTab}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -16 }}
-              transition={{ duration: 0.35 }}
-              className="grid lg:grid-cols-2 gap-10 items-start">
-
-              {/* Left: Text + Metrics */}
-              <div className="flex flex-col gap-8">
-                <div>
-                  <h3 className="text-3xl font-black text-white mb-3">{USE_CASES[activeTab].headline}</h3>
-                  <p className="text-gray-400 leading-relaxed">{USE_CASES[activeTab].sub}</p>
-                </div>
-
-                <div className="flex flex-col gap-3">
-                  <p className="font-mono-code text-[10px] uppercase tracking-widest text-gray-600">Before / After Metrics</p>
-                  {USE_CASES[activeTab].metrics.map(m => (
-                    <div key={m.label} className="flex items-center justify-between p-4 rounded-xl bg-[#111] border border-[#00d4ff]/10 hover:border-[#00d4ff]/25 transition-colors">
-                      <span className="text-gray-400 text-sm">{m.label}</span>
-                      <div className="flex items-center gap-3">
-                        <span className="font-mono-code text-gray-600 text-sm line-through">{m.before}</span>
-                        <span className="font-bold font-mono-code text-sm" style={{ color: m.color }}>{m.after}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <Link href="/features"
-                  className="inline-flex items-center gap-2 font-mono-code text-sm tracking-widest self-start transition-colors"
-                  style={{ color: USE_CASES[activeTab].color }}>
-                  See all {USE_CASES[activeTab].label} features →
-                </Link>
-              </div>
-
-              {/* Right: Dashboard Mockup */}
-              <DashboardMockup useCase={USE_CASES[activeTab]} />
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </section>
-
       {/* ── FINAL CTA BANNER ──────────────────────────────────────────────────── */}
       <section className="py-24 px-6">
         <motion.div initial={{ opacity: 0, scale: 0.97 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true, margin: '-80px' }}
@@ -460,19 +334,19 @@ export default function HomePage() {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-px bg-gradient-to-r from-transparent via-[#00ff41]/60 to-transparent" />
           <p className="font-mono-code text-[#00ff41] text-[11px] tracking-widest uppercase mb-5">Ready to go live?</p>
           <h2 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tight leading-tight">
-            Your venue is waiting<br />to be <span className="text-gradient-green">activated.</span>
+            The decentralized future is<br /> <span className="text-gradient-green">serverless.</span>
           </h2>
           <p className="text-gray-400 max-w-xl mx-auto mb-10 leading-relaxed">
-            One command. One QR code. Infinite programmability.<br />Get live in under 5 minutes — no credit card.
+            Download the Q-OS Daemon, deploy your first WASM module, and experience zero-latency computing.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/developers"
               className="px-10 py-4 text-sm font-bold font-mono-code text-black bg-[#00ff41] rounded-xl tracking-widest uppercase shadow-[0_0_35px_rgba(0,255,65,0.4)] hover:shadow-[0_0_55px_rgba(0,255,65,0.6)] hover:scale-105 transition-all">
-              Deploy Free Node →
+              Initialize Node →
             </Link>
-            <Link href="/pricing"
+            <Link href="https://github.com/qos/qos" target="_blank"
               className="font-mono-code text-sm text-gray-500 hover:text-[#00d4ff] tracking-widest transition-colors">
-              View Pricing
+              GitHub Repository
             </Link>
           </div>
         </motion.div>

@@ -16,22 +16,27 @@ fn make_entry(bytes: Vec<u8>, node_id: &str, clock_val: u64, ts: u64) -> StateEn
 
 async fn setup_node(db_path: &std::path::Path) -> (Arc<SledStateStore>, StateSyncEngine) {
     let local_key = identity::Keypair::generate_ed25519();
-    let local_peer_id = local_key.public().to_peer_id();
+    let _local_peer_id = local_key.public().to_peer_id();
 
-    let behaviour = QosSyncBehaviour::new(&local_key).unwrap();
-    let swarm = libp2p::SwarmBuilder::with_existing_identity(local_key)
+    let mut swarm = libp2p::SwarmBuilder::with_existing_identity(local_key)
         .with_tokio()
         .with_tcp(
             libp2p::tcp::Config::default(),
             libp2p::noise::Config::new,
             libp2p::yamux::Config::default,
         ).unwrap()
-        .with_behaviour(|_| behaviour).unwrap()
+        .with_relay_client(libp2p::noise::Config::new, libp2p::yamux::Config::default).unwrap()
+        .with_behaviour(|key, relay_behaviour| {
+            QosSyncBehaviour::new(key, relay_behaviour).expect("Failed to init behaviour")
+        }).unwrap()
         .with_swarm_config(|c| c.with_idle_connection_timeout(Duration::from_secs(60)))
         .build();
 
+    swarm.listen_on("/ip4/0.0.0.0/tcp/0".parse().unwrap()).unwrap();
+
     let store = Arc::new(SledStateStore::open(db_path).unwrap());
-    let engine = StateSyncEngine::spawn(swarm, store.clone()).await.unwrap();
+    let (telemetry_tx, _) = tokio::sync::broadcast::channel::<String>(1024);
+    let (engine, _network_state) = StateSyncEngine::spawn(swarm, store.clone(), telemetry_tx).await.unwrap();
 
     (store, engine)
 }
@@ -41,7 +46,7 @@ async fn test_crdt_sync_gossipsub() {
     let dir1 = tempfile::tempdir().unwrap();
     let dir2 = tempfile::tempdir().unwrap();
 
-    let (store1, engine1) = setup_node(dir1.path()).await;
+    let (store1, _engine1) = setup_node(dir1.path()).await;
     let (store2, _engine2) = setup_node(dir2.path()).await;
 
     // Allow some time for mDNS to discover peers and Gossipsub mesh to form.
@@ -74,7 +79,7 @@ async fn test_crdt_sync_gossipsub() {
 /// and the resulting merged vector clock contains entries from BOTH nodes.
 #[test]
 fn test_concurrent_peer_updates_merged_not_lost() {
-    let key = StateKey::new("test_module", "inv_concurrent", "shared_value");
+    let _key = StateKey::new("test_module", "inv_concurrent", "shared_value");
 
     // Node A writes at time=100 with its own clock
     let node_a_entry = StateEntry {

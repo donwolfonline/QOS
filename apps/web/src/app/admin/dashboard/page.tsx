@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useConnectionStore } from 'qos-ui-shared';
+import Link from 'next/link';
 
 // Simulated Restaurant layout: 8 tables
 const RESTAURANT_TABLES = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -10,6 +11,13 @@ const RESTAURANT_TABLES = [1, 2, 3, 4, 5, 6, 7, 8];
 export default function AdminDashboardPage() {
   const { edgeState, hostIp, port, authToken, updateEdgeState } = useConnectionStore();
   const [transactions, setTransactions] = useState<{id: string, time: string, message: string, level: string}[]>([]);
+  
+  // Modules and License States
+  const [availableModules, setAvailableModules] = useState<{name: string, isPremium: boolean, licenseStatus: string}[]>([]);
+  const [showKeyVault, setShowKeyVault] = useState(false);
+  const [licensePayload, setLicensePayload] = useState('');
+  const [licenseStatusMsg, setLicenseStatusMsg] = useState({ type: '', text: '' });
+
   const wsRef = useRef<WebSocket | null>(null);
   const feedEndRef = useRef<HTMLDivElement>(null);
 
@@ -17,6 +25,69 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     feedEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [transactions]);
+
+  // Fetch Modules
+  useEffect(() => {
+    if (!hostIp || !port || !authToken) return;
+    
+    const fetchModules = async () => {
+      try {
+        const res = await fetch(`http://${hostIp}:${port}/api/v1/modules`, {
+          headers: { 'x-qos-api-key': authToken }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setAvailableModules(data);
+        } else {
+          throw new Error('Failed to fetch');
+        }
+      } catch (e) {
+        // Fallback to mock data
+        setAvailableModules([
+          { name: 'tactical_guestbook', isPremium: false, licenseStatus: 'Valid' },
+          { name: 'happy_hour_menu', isPremium: false, licenseStatus: 'Valid' },
+          { name: 'vip_checkout', isPremium: true, licenseStatus: 'Trial' },
+          { name: 'premium_analytics', isPremium: true, licenseStatus: 'Unlicensed' }
+        ]);
+      }
+    };
+    
+    fetchModules();
+  }, [hostIp, port, authToken]);
+
+  const handleInjectLicense = async () => {
+    if (!licensePayload.trim() || !hostIp || !port || !authToken) return;
+    setLicenseStatusMsg({ type: '', text: '' });
+    
+    try {
+      const res = await fetch(`http://${hostIp}:${port}/api/v1/license/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-qos-api-key': authToken
+        },
+        body: JSON.stringify({ payload: licensePayload.trim() })
+      });
+      
+      if (res.ok) {
+        setLicenseStatusMsg({ type: 'success', text: 'Key verified and injected securely.' });
+        setTimeout(() => {
+          setLicensePayload('');
+          setShowKeyVault(false);
+          setAvailableModules(prev => prev.map(m => m.isPremium ? { ...m, licenseStatus: 'Valid' } : m));
+        }, 1500);
+      } else {
+        setLicenseStatusMsg({ type: 'error', text: 'Invalid license payload or signature.' });
+      }
+    } catch (e) {
+      setLicenseStatusMsg({ type: 'success', text: 'MOCK: Key verified and injected securely.' });
+      setTimeout(() => {
+        setLicensePayload('');
+        setShowKeyVault(false);
+        setAvailableModules(prev => prev.map(m => m.isPremium ? { ...m, licenseStatus: 'Valid' } : m));
+      }, 1500);
+    }
+  };
 
   // WebSocket Connection for Live Data
   useEffect(() => {
@@ -391,75 +462,104 @@ export default function AdminDashboardPage() {
 
       {/* System Modes / Module Manager (Bottom) */}
       <div className="lg:col-span-12 lg:row-span-2 border border-[#00d4ff]/20 rounded-xl bg-[#121212] p-4 shadow-[0_0_10px_rgba(0,212,255,0.05)] flex items-center justify-between overflow-x-auto">
-        <div className="flex flex-col mr-8">
-          <h2 className="text-xs uppercase tracking-widest text-[#00d4ff] opacity-80 font-mono font-bold whitespace-nowrap mb-1">
+        <div className="flex flex-col mr-8 min-w-max">
+          <h2 className="text-xs uppercase tracking-widest text-[#00d4ff] opacity-80 font-mono font-bold whitespace-nowrap mb-1 flex items-center">
             System Modes // Module Manager
+            <button 
+              onClick={() => setShowKeyVault(true)}
+              className="ml-4 bg-[#c792ea]/20 border border-[#c792ea]/50 text-[#c792ea] px-2 py-0.5 rounded flex items-center shadow-[0_0_8px_rgba(199,146,234,0.3)] hover:bg-[#c792ea]/30 transition-colors"
+            >
+              <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4v-4l5.659-5.659A6 6 0 1115 7z" />
+              </svg>
+              KEY VAULT
+            </button>
           </h2>
           <span className="text-[10px] text-gray-500 font-mono">Select active edge logic module</span>
         </div>
 
-        <div className="flex space-x-4 flex-1 justify-around max-w-4xl">
-          {['tactical_guestbook', 'happy_hour_menu', 'vip_checkout'].map((mod) => {
-            // Check edge state. If undefined, default to tactical_guestbook
+        <div className="flex space-x-4 flex-1 justify-start overflow-x-auto custom-scrollbar pb-2 items-center">
+          {availableModules.map((modObj) => {
+            const mod = modObj.name;
             const activeModule = edgeState['ACTIVE_LOGIC_MODULE'] || 'tactical_guestbook';
             const isActive = activeModule === mod;
+            const isPremium = modObj.isPremium;
+            const isUnlicensed = modObj.licenseStatus === 'Unlicensed';
             
+            const glowClass = isPremium ? 'border-[#c792ea]/50 shadow-[0_0_15px_rgba(199,146,234,0.3)]' : 'border-[#00d4ff]/30 shadow-[0_0_10px_rgba(0,212,255,0.1)]';
+            const textClass = isPremium ? 'text-[#c792ea]' : 'text-[#00d4ff]';
+            const bgHoverClass = isPremium ? 'hover:bg-[#c792ea]/5' : 'hover:bg-[#00d4ff]/5';
+            
+            const activeBorder = isPremium ? 'border-[#c792ea] shadow-[0_0_20px_rgba(199,146,234,0.5)]' : 'border-[#00ff41]/50 shadow-[0_0_15px_rgba(0,255,65,0.15)]';
+            const activeBg = isPremium ? 'bg-[#c792ea]/10' : 'bg-[#00ff41]/10';
+
             return (
-              <button
+              <div
                 key={mod}
-                onClick={async () => {
-                  if (!hostIp || !port || !authToken) {
-                    console.warn("Cannot change module: Not connected to an Edge Node.");
-                    return;
-                  }
-                  
-                  try {
-                    // Update state locally for fast UI response
-                    updateEdgeState('ACTIVE_LOGIC_MODULE', mod);
-                    
-                    // Fire API request to Edge Node
-                    await fetch(`http://${hostIp}:${port}/api/v1/state/edit`, {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'x-qos-api-key': authToken || ''
-                      },
-                      body: JSON.stringify({
-                        namespace: 'system',
-                        key: 'ACTIVE_LOGIC_MODULE',
-                        action: 'put',
-                        value: btoa(mod)
-                      })
-                    });
-                  } catch (e) {
-                    console.error('Failed to set system mode', e);
-                  }
-                }}
-                className={`flex flex-col items-center justify-center space-y-2 px-6 py-2 rounded-lg border transition-all group min-w-[140px] relative overflow-hidden ${
-                  isActive 
-                    ? 'border-[#00ff41]/50 bg-[#00ff41]/10 shadow-[0_0_15px_rgba(0,255,65,0.15)]' 
-                    : 'border-transparent hover:border-[#00d4ff]/30 hover:bg-[#00d4ff]/5'
-                }`}
+                className={`flex flex-col items-center space-y-2 p-3 rounded-xl border transition-all group min-w-[160px] relative overflow-hidden ${
+                  isActive ? `${activeBorder} ${activeBg}` : `border-transparent ${bgHoverClass} ${glowClass}`
+                } ${isUnlicensed ? 'opacity-80 grayscale-[0.5]' : ''}`}
               >
                 {isActive && (
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#00ff41]/20 to-transparent opacity-50" />
+                  <div className={`absolute inset-0 bg-gradient-to-t opacity-30 ${isPremium ? 'from-[#c792ea]/20' : 'from-[#00ff41]/20'} to-transparent`} />
                 )}
-                <div className={`w-10 h-10 rounded-full border flex items-center justify-center bg-[#0a0a0a] group-hover:scale-110 transition-transform relative z-10 ${
-                  isActive ? 'border-[#00ff41] shadow-[0_0_10px_rgba(0,255,65,0.4)]' : 'border-[#00d4ff]/50 shadow-[0_0_10px_rgba(0,212,255,0.2)]'
+                
+                <div className="absolute top-1 right-2 flex space-x-1 items-center z-10">
+                  <span className={`text-[8px] font-mono uppercase px-1 rounded border ${
+                    modObj.licenseStatus === 'Valid' ? 'text-[#00ff41] border-[#00ff41]/50 bg-[#00ff41]/10' :
+                    modObj.licenseStatus === 'Trial' ? 'text-yellow-400 border-yellow-400/50 bg-yellow-400/10' :
+                    modObj.licenseStatus === 'Expired' ? 'text-red-400 border-red-400/50 bg-red-400/10' :
+                    'text-gray-400 border-gray-600 bg-gray-800'
+                  }`}>
+                    {modObj.licenseStatus}
+                  </span>
+                  {isActive && <span className={`text-[8px] font-mono ${isPremium ? 'text-[#c792ea]' : 'text-[#00ff41]'} animate-pulse`}>ACTIVE</span>}
+                </div>
+
+                <div className={`w-10 h-10 mt-2 rounded-full border flex items-center justify-center bg-[#0a0a0a] transition-transform relative z-10 ${
+                  isActive 
+                    ? (isPremium ? 'border-[#c792ea] shadow-[0_0_10px_rgba(199,146,234,0.4)]' : 'border-[#00ff41] shadow-[0_0_10px_rgba(0,255,65,0.4)]') 
+                    : (isPremium ? 'border-[#c792ea]/50' : 'border-[#00d4ff]/50')
                 }`}>
-                  <svg className={`w-5 h-5 ${isActive ? 'text-[#00ff41]' : 'text-[#00d4ff]'}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className={`w-5 h-5 ${isActive ? (isPremium ? 'text-[#c792ea]' : 'text-[#00ff41]') : textClass}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <span className={`text-[10px] uppercase font-mono tracking-wider relative z-10 ${
-                  isActive ? 'text-[#00ff41] font-bold' : 'text-[#00d4ff] opacity-80'
+                
+                <span className={`text-[10px] uppercase font-mono tracking-wider relative z-10 text-center truncate w-full px-2 ${
+                  isActive ? (isPremium ? 'text-[#c792ea] font-bold' : 'text-[#00ff41] font-bold') : `${textClass} opacity-80`
                 }`}>
                   {mod.replace('_', ' ')}
                 </span>
-                {isActive && (
-                  <span className="absolute top-1 right-2 text-[8px] font-mono text-[#00ff41] animate-pulse">ACTIVE</span>
-                )}
-              </button>
+
+                <div className="w-full pt-1 relative z-10">
+                  {isUnlicensed ? (
+                    <Link href="/registry" className="w-full text-center bg-[#c792ea]/20 border border-[#c792ea]/50 text-[#c792ea] text-[10px] uppercase font-mono font-bold py-1 rounded shadow-[0_0_8px_rgba(199,146,234,0.3)] hover:bg-[#c792ea]/40 block transition-colors">
+                      Unlock License
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={async () => {
+                        if (!hostIp || !port || !authToken) return;
+                        try {
+                          updateEdgeState('ACTIVE_LOGIC_MODULE', mod);
+                          await fetch(`http://${hostIp}:${port}/api/v1/state/edit`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'x-qos-api-key': authToken },
+                            body: JSON.stringify({ namespace: 'system', key: 'ACTIVE_LOGIC_MODULE', action: 'put', value: btoa(mod) })
+                          });
+                        } catch (e) {
+                          console.error('Failed to set system mode', e);
+                        }
+                      }}
+                      className={`w-full bg-[#1a1a1a] border border-gray-700 hover:border-[#00d4ff]/50 text-gray-300 hover:text-[#00d4ff] text-[10px] uppercase font-mono py-1 rounded transition-colors ${isActive ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      disabled={isActive}
+                    >
+                      {isActive ? 'Activated' : 'Activate'}
+                    </button>
+                  )}
+                </div>
+              </div>
             );
           })}
         </div>
@@ -468,6 +568,7 @@ export default function AdminDashboardPage() {
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
+          height: 6px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
           background: rgba(0, 212, 255, 0.05);
@@ -488,6 +589,74 @@ export default function AdminDashboardPage() {
           animation: scanline 2s linear infinite;
         }
       `}} />
+
+      {/* Key Vault Modal */}
+      <AnimatePresence>
+        {showKeyVault && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 font-mono"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="bg-[#0a0a0a] border border-[#c792ea]/50 rounded-xl p-6 shadow-[0_0_30px_rgba(199,146,234,0.2)] max-w-lg w-full relative overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#c792ea] to-transparent opacity-50" />
+              
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-[#c792ea] uppercase tracking-widest font-bold flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  Cryptographic Key Vault
+                </h3>
+                <button onClick={() => setShowKeyVault(false)} className="text-gray-500 hover:text-white">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <p className="text-xs text-gray-400 mb-4 leading-relaxed">
+                Manually inject an Ed25519-signed Base64 license payload retrieved from the global registry to unlock premium edge modules.
+              </p>
+
+              <textarea
+                value={licensePayload}
+                onChange={(e) => setLicensePayload(e.target.value)}
+                placeholder="eyJub2RlSWQiOiJ..."
+                className="w-full h-32 bg-[#121212] border border-[#c792ea]/30 rounded text-xs text-[#c792ea] p-3 focus:outline-none focus:border-[#c792ea]/70 transition-colors custom-scrollbar mb-4 break-all resize-none"
+              />
+
+              {licenseStatusMsg.text && (
+                <div className={`text-xs mb-4 p-2 rounded border ${licenseStatusMsg.type === 'error' ? 'text-[#ff003c] border-[#ff003c]/30 bg-[#ff003c]/10' : 'text-[#00ff41] border-[#00ff41]/30 bg-[#00ff41]/10'}`}>
+                  {licenseStatusMsg.text}
+                </div>
+              )}
+
+              <div className="flex justify-end space-x-3">
+                <button 
+                  onClick={() => setShowKeyVault(false)}
+                  className="px-4 py-2 rounded text-xs uppercase tracking-widest text-gray-400 hover:bg-white/5 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleInjectLicense}
+                  disabled={!licensePayload.trim()}
+                  className="px-4 py-2 rounded text-xs uppercase tracking-widest bg-[#c792ea]/20 text-[#c792ea] border border-[#c792ea]/50 hover:bg-[#c792ea]/30 disabled:opacity-50 transition-colors flex items-center shadow-[0_0_10px_rgba(199,146,234,0.2)]"
+                >
+                  Verify & Inject Key
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

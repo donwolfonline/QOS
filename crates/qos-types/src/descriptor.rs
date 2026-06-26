@@ -49,4 +49,8 @@ pub struct ModuleDescriptor {
 
     /// How long (seconds) the compiled module may remain in the cache.
     pub ttl_secs: Option<u32>,
+
+    /// Indicates whether the runtime should enforce a valid Local License Store receipt.
+    #[serde(default)]
+    pub requires_license: bool,
 }

@@ -1,0 +1,17 @@
+{
+  "name": "dummy_module",
+  "version": "1.0.0",
+  "author": "Test Author",
+  "capabilities": {
+    "network": false,
+    "fs_read": false,
+    "fs_write": false,
+    "gpu": false,
+    "state_read": false,
+    "state_write": false
+  },
+  "entrypoint": "run",
+  "dependencies": {},
+  "initial_state": {},
+  "requires_license": true
+}

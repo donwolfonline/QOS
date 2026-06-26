@@ -5,12 +5,12 @@ extern crate alloc;
 use alloc::string::{String, ToString};
 use alloc::format;
 
-use qos_sdk::{log_msg, LogLevel};
+use qos_sdk::LogLevel;
 
 #[cfg(not(test))]
 #[panic_handler]
 fn panic(_info: &core::panic::PanicInfo) -> ! {
-    log_msg(LogLevel::Error, "Guestbook module panicked!");
+    qos_sdk::log::telemetry(LogLevel::Error, "Guestbook module panicked!");
     #[cfg(target_arch = "wasm32")]
     core::arch::wasm32::unreachable();
     #[cfg(not(target_arch = "wasm32"))]
@@ -19,7 +19,7 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 
 #[no_mangle]
 pub extern "C" fn _start() -> i32 {
-    log_msg(LogLevel::Info, "Guestbook module starting...");
+    qos_sdk::log::telemetry(LogLevel::Info, "Guestbook module starting...");
 
     // 1. Read input payload (e.g. user_name and device_id) via Host ABI state
     let user_name = qos_sdk::state::get("user_name")
@@ -57,7 +57,7 @@ pub extern "C" fn _start() -> i32 {
 
     // 4. Save updated list back to edge node
     if qos_sdk::state::set("guestbook_log", log_str.as_bytes()).is_err() {
-        log_msg(LogLevel::Error, "Failed to save guestbook_log");
+        qos_sdk::log::telemetry(LogLevel::Error, "Failed to save guestbook_log");
         return -1;
     }
 
@@ -68,10 +68,10 @@ pub extern "C" fn _start() -> i32 {
     );
 
     if qos_sdk::state::set("response", response.as_bytes()).is_err() {
-        log_msg(LogLevel::Error, "Failed to write response payload");
+        qos_sdk::log::telemetry(LogLevel::Error, "Failed to write response payload");
         return -1;
     }
 
-    log_msg(LogLevel::Info, "Guestbook module executed successfully");
+    qos_sdk::log::telemetry(LogLevel::Info, "Guestbook module executed successfully");
     0
 }

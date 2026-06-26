@@ -6,6 +6,9 @@ use libp2p::request_response::{self, ProtocolSupport};
 use libp2p::swarm::NetworkBehaviour;
 use libp2p::identity::Keypair;
 use libp2p::StreamProtocol;
+use libp2p::kad;
+use libp2p::kad::store::MemoryStore;
+use libp2p::{autonat, dcutr, identify, ping, relay};
 use serde::{Deserialize, Serialize};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
@@ -30,11 +33,17 @@ pub struct QosSyncBehaviour {
     pub gossipsub: gossipsub::Behaviour,
     pub mdns: mdns::tokio::Behaviour,
     pub request_response: request_response::cbor::Behaviour<SyncRequest, SyncResponse>,
+    pub kademlia: kad::Behaviour<MemoryStore>,
+    pub relay_client: relay::client::Behaviour,
+    pub dcutr: dcutr::Behaviour,
+    pub autonat: autonat::Behaviour,
+    pub identify: identify::Behaviour,
+    pub ping: ping::Behaviour,
 }
 
 impl QosSyncBehaviour {
     /// Initialize a new Q-OS Sync Behaviour.
-    pub fn new(local_key: &Keypair) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn new(local_key: &Keypair, relay_client: relay::client::Behaviour) -> Result<Self, Box<dyn std::error::Error>> {
         // Setup mDNS for local network discovery.
         let mdns = mdns::tokio::Behaviour::new(
             mdns::Config::default(),
@@ -68,6 +77,34 @@ impl QosSyncBehaviour {
             request_response::Config::default(),
         );
 
-        Ok(Self { gossipsub, mdns, request_response })
+        // Setup Kademlia DHT for global peer discovery.
+        let kad_config = kad::Config::new(StreamProtocol::new("/qos/kad/1.0.0"));
+        let store = MemoryStore::new(local_key.public().to_peer_id());
+        let mut kademlia = kad::Behaviour::with_config(local_key.public().to_peer_id(), store, kad_config);
+
+        // Configure bootstrap node
+        if let Ok(addr) = "/dnsaddr/bootstrap.q-os.io".parse() {
+            // We use a valid dummy PeerId to represent the bootstrap node for now.
+            // In a real implementation, this would be the actual public key hash of the bootstrap node.
+            if let Ok(bootstrap_peer) = "12D3KooWEvAAL455L6bQ4wTmbq6Y6e61CGuD7tB2Fq8hVz1J6Xn3".parse() {
+                kademlia.add_address(&bootstrap_peer, addr);
+            }
+        }
+
+        let identify = identify::Behaviour::new(identify::Config::new(
+            "/qos/1.0.0".to_string(),
+            local_key.public(),
+        ));
+
+        let ping = ping::Behaviour::new(ping::Config::new());
+
+        let autonat = autonat::Behaviour::new(
+            local_key.public().to_peer_id(),
+            autonat::Config::default(),
+        );
+
+        let dcutr = dcutr::Behaviour::new(local_key.public().to_peer_id());
+
+        Ok(Self { gossipsub, mdns, request_response, kademlia, relay_client, dcutr, autonat, identify, ping })
     }
 }

@@ -93,6 +93,7 @@ impl BootloaderPipeline {
             capabilities: payload.capabilities.clone(),
             entrypoint: payload.entrypoint.clone(),
             ttl_secs: payload.ttl_secs,
+            requires_license: false, // QR payloads don't currently have requires_license
         };
 
         self.policy.validate_capabilities(&descriptor.capabilities)?;
@@ -105,7 +106,9 @@ impl BootloaderPipeline {
             let key = descriptor.signer_pubkey.as_deref().ok_or_else(|| {
                 QosError::SignatureInvalid("strict mode requires a signer_pubkey".into())
             })?;
-            verify_module_signature(descriptor.sha256.as_bytes(), sig, key)?;
+            let hash_bytes = hex::decode(&descriptor.sha256)
+                .map_err(|e| QosError::SignatureInvalid(format!("invalid module hash hex: {e}")))?;
+            verify_module_signature(&hash_bytes, sig, key)?;
             info!("Ed25519 signature verified");
         } else {
             warn!("running without signature verification — not for production use");
@@ -244,12 +247,13 @@ impl BootloaderPipeline {
         let descriptor = ModuleDescriptor {
             uri: Url::parse(&format!("file://local/{}", manifest.name)).unwrap(),
             sha256: wasm_hash.clone(),
-            signature: None,
-            signer_pubkey: None,
+            signature: manifest.signature.clone(),
+            signer_pubkey: manifest.public_key.clone(),
             manifest_uri: None,
             capabilities: manifest.capabilities.clone(),
             entrypoint: manifest.entrypoint.clone(),
             ttl_secs: Some(3600),
+            requires_license: manifest.requires_license,
         };
 
         // 3. Validate capabilities strictly against policy

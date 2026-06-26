@@ -38,8 +38,14 @@ pub async fn start_server(state: ApiState) -> anyhow::Result<()> {
         .route("/api/v1/broadcast", post(routes::broadcast::broadcast_handler))
         .layer(middleware::from_fn_with_state(state.clone(), auth::require_api_key));
 
+    let debug_routes = Router::new()
+        .route("/api/v1/network/inspect", get(routes::network::inspect_handler))
+        .route("/api/v1/network/topology", get(routes::network::inspect_handler))
+        .with_state(state.clone());
+
     let app = Router::new()
-        .merge(api_routes)
+        .nest("/", api_routes)
+        .nest("/", debug_routes)
         .route("/api/v1/stream", get(routes::stream::ws_handler))
         .fallback(get(routes::static_files::static_handler))
         .layer(cors)

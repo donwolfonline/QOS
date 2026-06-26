@@ -1,12 +1,13 @@
 //! Host ABI import registrations.
 //!
 //! Every function listed here is the complete, audited set of host calls
-//! available to sandboxed WASM modules.  No other host surface exists.
+//! available to sandboxed WASM modules. No other host surface exists.
 //!
 //! ## ABI convention
 //! All pointers and lengths use `i32` (WASM linear memory addressing).
 //! Return values that would be variable-length are written into WASM memory
-//! and the byte count returned as `i32`; `-1` signals an error.
+//! and the byte count returned as `i32`; `-1` signals an error (if handled gracefully)
+//! or an uncatchable Wasmtime trap is triggered via `anyhow::bail!`.
 
 use std::sync::Arc;
 
@@ -38,11 +39,11 @@ impl QosHostContext for HostData {
 ///
 /// `module` is the WASM import namespace (conventionally `"host"`).
 pub fn register_host_imports<T: QosHostContext + Send + 'static>(linker: &mut Linker<T>, module: &str) -> Result<()> {
-    // ── host::log ────────────────────────────────────────────────────────────
+    // ── host::sys_log_telemetry ──────────────────────────────────────────────
     linker.func_wrap(
         module,
-        "log",
-        |mut caller: Caller<'_, T>, level: i32, ptr: i32, len: i32| {
+        "sys_log_telemetry",
+        |mut caller: Caller<'_, T>, level: i32, ptr: i32, len: i32| -> Result<()> {
             if let Some(msg) = read_wasm_string(&mut caller, ptr, len) {
                 match level {
                     0 => tracing::error!(wasm_log = %msg),
@@ -51,6 +52,47 @@ pub fn register_host_imports<T: QosHostContext + Send + 'static>(linker: &mut Li
                     _ => tracing::debug!(wasm_log = %msg),
                 }
             }
+            Ok(())
+        },
+    )?;
+
+    // ── host::sys_network_broadcast ─────────────────────────────────────────
+    linker.func_wrap(
+        module,
+        "sys_network_broadcast",
+        |mut caller: Caller<'_, T>,
+         topic_ptr: i32,
+         topic_len: i32,
+         payload_ptr: i32,
+         payload_len: i32|
+         -> Result<i32> {
+            tracing::debug!(syscall = "sys_network_broadcast", topic_ptr, topic_len, payload_len);
+            
+            if !caller.data_mut().host_data().capabilities.network {
+                tracing::error!("capability denied: network");
+                anyhow::bail!("Security Exception: module attempted 'sys_network_broadcast' but lacks 'network' capability in manifest.");
+            }
+            
+            let topic_str = match read_wasm_string(&mut caller, topic_ptr, topic_len) {
+                Some(k) => k,
+                None => return Ok(-1),
+            };
+            
+            let payload_bytes = match read_wasm_bytes(&mut caller, payload_ptr, payload_len) {
+                Some(b) => b,
+                None => return Ok(-1),
+            };
+
+            let payload_str = String::from_utf8_lossy(&payload_bytes);
+            
+            tracing::info!(
+                target: "telemetry",
+                topic = %topic_str,
+                payload = %payload_str,
+                "Network broadcast from WASM module"
+            );
+            
+            Ok(0)
         },
     )?;
 
@@ -64,24 +106,24 @@ pub fn register_host_imports<T: QosHostContext + Send + 'static>(linker: &mut Li
         now
     })?;
 
-    // ── host::state_get ──────────────────────────────────────────────────────
+    // ── host::sys_state_get ──────────────────────────────────────────────────
     linker.func_wrap(
         module,
-        "state_get",
+        "sys_state_get",
         |mut caller: Caller<'_, T>,
          key_ptr: i32,
          key_len: i32,
          out_ptr: i32,
          out_max: i32|
-         -> i32 {
-            tracing::debug!(syscall = "state_get", key_ptr, key_len);
+         -> Result<i32> {
+            tracing::debug!(syscall = "sys_state_get", key_ptr, key_len);
             if !caller.data_mut().host_data().capabilities.state_read {
                 tracing::error!("capability denied: state_read");
-                return -1;
+                anyhow::bail!("Security Exception: module attempted 'sys_state_get' but lacks 'state_read' capability in manifest.");
             }
             let key_str = match read_wasm_string(&mut caller, key_ptr, key_len) {
                 Some(k) => k,
-                None => return -1,
+                None => return Ok(-1),
             };
             let (module_hash, invocation_id) = {
                 let d = caller.data_mut().host_data();
@@ -93,38 +135,38 @@ pub fn register_host_imports<T: QosHostContext + Send + 'static>(linker: &mut Li
                 caller.data_mut().host_data().state.get(&state_key)
             };
             match result {
-                Ok(Some(val)) => write_wasm_bytes(&mut caller, out_ptr, out_max, &val.bytes),
-                Ok(None) => 0,
+                Ok(Some(val)) => Ok(write_wasm_bytes(&mut caller, out_ptr, out_max, &val.bytes)),
+                Ok(None) => Ok(0),
                 Err(e) => {
-                    tracing::error!(err = %e, "state_get failed");
-                    -1
+                    tracing::error!(err = %e, "sys_state_get failed");
+                    Ok(-1)
                 }
             }
         },
     )?;
 
-    // ── host::state_set ──────────────────────────────────────────────────────
+    // ── host::sys_state_set ──────────────────────────────────────────────────
     linker.func_wrap(
         module,
-        "state_set",
+        "sys_state_set",
         |mut caller: Caller<'_, T>,
          key_ptr: i32,
          key_len: i32,
          val_ptr: i32,
          val_len: i32|
-         -> i32 {
-            tracing::debug!(syscall = "state_set", key_ptr, key_len, val_len);
+         -> Result<i32> {
+            tracing::debug!(syscall = "sys_state_set", key_ptr, key_len, val_len);
             if !caller.data_mut().host_data().capabilities.state_write {
                 tracing::error!("capability denied: state_write");
-                return -1;
+                anyhow::bail!("Security Exception: module attempted 'sys_state_set' but lacks 'state_write' capability in manifest.");
             }
             let key_str = match read_wasm_string(&mut caller, key_ptr, key_len) {
                 Some(k) => k,
-                None => return -1,
+                None => return Ok(-1),
             };
             let val_bytes = match read_wasm_bytes(&mut caller, val_ptr, val_len) {
                 Some(b) => b,
-                None => return -1,
+                None => return Ok(-1),
             };
             let (module_hash, invocation_id) = {
                 let d = caller.data_mut().host_data();
@@ -147,10 +189,10 @@ pub fn register_host_imports<T: QosHostContext + Send + 'static>(linker: &mut Li
                 caller.data_mut().host_data().state.set(&state_key, value)
             };
             match result {
-                Ok(_) => 0,
+                Ok(_) => Ok(0),
                 Err(e) => {
-                    tracing::error!(err = %e, "state_set failed");
-                    -1
+                    tracing::error!(err = %e, "sys_state_set failed");
+                    Ok(-1)
                 }
             }
         },

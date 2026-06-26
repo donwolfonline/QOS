@@ -1,0 +1,33 @@
+
+> web@0.1.0 build /Users/frederickdineen/qos/apps/web
+> next build --webpack
+
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/frederickdineen/package-lock.json as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * /Users/frederickdineen/qos/pnpm-workspace.yaml
+
+▲ Next.js 16.2.9 (webpack)
+- Environments: .env.local
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOSPC: no space left on device, write
+✓ Compiled successfully in 55s
+  Running TypeScript ...
+Failed to type check.
+
+./src/app/admin/mesh/MeshRadarGraph.tsx:34:17
+Type error: Expected 1 arguments, but got 0.
+
+  [90m32 |[0m   [36mconst[0m { hostIp, port, authToken } = useConnectionStore();
+  [90m33 |[0m   [36mconst[0m wsRef = useRef<[33mWebSocket[0m | [36mnull[0m>([36mnull[0m);
+[31m[1m>[0m [90m34 |[0m   [36mconst[0m fgRef = useRef<[33mForceGraphMethods[0m>();
+  [90m   |[0m                 [31m[1m^[0m
+  [90m35 |[0m   
+  [90m36 |[0m   [36mconst[0m [graphData, setGraphData] = useState<{nodes: [33mGraphNode[0m[], links: [33mGraphLink[0m[]}>({ n...
+  [90m37 |[0m   [36mconst[0m graphDataRef = useRef(graphData);
+Next.js build worker exited with code: 1 and signal: null
+ ELIFECYCLE  Command failed with exit code 1.

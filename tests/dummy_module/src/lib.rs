@@ -1,11 +1,11 @@
 #![no_std]
 
-use qos_sdk::{log_msg, LogLevel};
+use qos_sdk::LogLevel;
 
 #[cfg(not(test))]
 #[panic_handler]
 fn panic(_info: &core::panic::PanicInfo) -> ! {
-    log_msg(LogLevel::Error, "WASM module panicked!");
+    qos_sdk::log::telemetry(LogLevel::Error, "WASM module panicked!");
     #[cfg(target_arch = "wasm32")]
     core::arch::wasm32::unreachable();
     #[cfg(not(target_arch = "wasm32"))]
@@ -14,7 +14,7 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 
 #[no_mangle]
 pub extern "C" fn run() -> i32 {
-    log_msg(LogLevel::Info, "Hello from dummy_module WASM!");
+    qos_sdk::log::telemetry(LogLevel::Info, "Hello from dummy_module WASM!");
     
     // Check time
     let _now = qos_sdk::time::now_ms();

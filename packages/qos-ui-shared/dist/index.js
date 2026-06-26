@@ -1,4 +1,5 @@
 "use strict";
+"use client";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -19,3 +20,4 @@ __exportStar(require("./components/ThemeProvider"), exports);
 __exportStar(require("./components/NeonContainer"), exports);
 __exportStar(require("./components/ScanlineOverlay"), exports);
 __exportStar(require("./components/MetricsWidget"), exports);
+__exportStar(require("./store/useConnectionStore"), exports);

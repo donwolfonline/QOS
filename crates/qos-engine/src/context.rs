@@ -47,6 +47,10 @@ pub enum InvocationStatus {
     TimedOut,
     /// An internal engine error occurred before execution could start.
     EngineError { reason: String },
+    /// The cryptographic signature verification failed before instantiation.
+    SecurityViolation { reason: String },
+    /// The module requires a premium license receipt, but none was found.
+    Unlicensed,
 }
 
 /// Builder for [`InvocationResult`] — accumulated during execution.

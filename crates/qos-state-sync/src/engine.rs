@@ -4,13 +4,15 @@ use crate::network::{QosSyncBehaviour, QosSyncBehaviourEvent};
 use crate::types::StateDelta;
 use futures::StreamExt;
 use libp2p::gossipsub::IdentTopic;
-use libp2p::{gossipsub, mdns, request_response, swarm::SwarmEvent, PeerId, Swarm};
+use libp2p::{gossipsub, kad, mdns, request_response, swarm::SwarmEvent, PeerId, Swarm};
 use qos_state::{SledStateStore, StateStore};
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use tokio::sync::mpsc;
 use tracing::{debug, error, info, warn};
+use libp2p::ping;
+use qos_types::network::{NetworkState, PeerInfo, ConnectionType};
 
-const STATE_SYNC_TOPIC: &str = "qos-state-v1";
+const STATE_SYNC_TOPIC: &str = "qos-state-crtd-sync";
 
 /// Coordinates local `SledStateStore` mutations with network peers using Gossipsub.
 pub struct StateSyncEngine {
@@ -18,6 +20,7 @@ pub struct StateSyncEngine {
     topic: IdentTopic,
     /// Channel to send outgoing broadcast requests to the background swarm thread.
     broadcast_tx: mpsc::Sender<StateDelta>,
+    network_state: Arc<RwLock<NetworkState>>,
 }
 
 impl StateSyncEngine {
@@ -25,10 +28,8 @@ impl StateSyncEngine {
     pub async fn spawn(
         mut swarm: Swarm<QosSyncBehaviour>,
         store: Arc<SledStateStore>,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
-        // Start listening on all interfaces (OS assigned port)
-        swarm.listen_on("/ip4/0.0.0.0/tcp/0".parse()?)?;
-
+        telemetry_tx: tokio::sync::broadcast::Sender<String>,
+    ) -> Result<(Self, Arc<RwLock<NetworkState>>), Box<dyn std::error::Error>> {
         // Create and subscribe to the state sync topic
         let topic = IdentTopic::new(STATE_SYNC_TOPIC);
         swarm.behaviour_mut().gossipsub.subscribe(&topic)?;
@@ -41,18 +42,44 @@ impl StateSyncEngine {
         let mut local_events_rx = store.subscribe();
         let local_peer_id_str = swarm.local_peer_id().to_string();
 
+        let network_state = Arc::new(RwLock::new(NetworkState {
+            local_peer_id: local_peer_id_str.clone(),
+            ..Default::default()
+        }));
+        let task_network_state = network_state.clone();
+
+        // Initiate Kademlia Bootstrap (dial the bootstrap nodes to join the global DHT)
+        if let Err(e) = swarm.behaviour_mut().kademlia.bootstrap() {
+            warn!("Failed to start Kademlia bootstrap: {:?}", e);
+        } else {
+            info!("Initiated Kademlia DHT bootstrap to join global network.");
+        }
+
+        // Setup NAT Traversal fallback via Relay
+        if let Ok(relay_addr) = "/dnsaddr/relay.q-os.io/p2p/12D3KooWRelayDummy".parse::<libp2p::Multiaddr>() {
+            if let Err(e) = swarm.dial(relay_addr) {
+                warn!("Failed to dial default relay node: {}", e);
+            }
+        }
+        
+        // Listen on circuit relay to allow NAT traversal fallback
+        if let Err(e) = swarm.listen_on("/p2p-circuit".parse::<libp2p::Multiaddr>().unwrap()) {
+            warn!("Failed to listen on /p2p-circuit: {}", e);
+        }
+
         // Spawn background task to poll the Swarm
+        let telemetry_tx_clone = telemetry_tx.clone();
         tokio::spawn(async move {
             loop {
                 tokio::select! {
                     // 1. Handle incoming swarm events (Gossipsub messages, mDNS discoveries)
                     event = swarm.select_next_some() => {
-                        handle_swarm_event(event, &mut swarm, &engine_store);
+                        handle_swarm_event(event, &mut swarm, &engine_store, &task_network_state, &telemetry_tx_clone);
                     }
 
                     // 2. Handle outgoing broadcasts triggered locally via API
                     Some(delta) = broadcast_rx.recv() => {
-                        broadcast_delta(&mut swarm, &engine_topic, delta);
+                        broadcast_delta(&mut swarm, &engine_topic, delta, &telemetry_tx_clone);
                     }
 
                     // 3. Handle local Sled state changes (event-subscriber bridge)
@@ -69,17 +96,18 @@ impl StateSyncEngine {
                                 origin_peer_id: local_peer_id_str.clone(),
                             },
                         };
-                        broadcast_delta(&mut swarm, &engine_topic, delta);
+                        broadcast_delta(&mut swarm, &engine_topic, delta, &telemetry_tx_clone);
                     }
                 }
             }
         });
 
-        Ok(Self {
+        Ok((Self {
             store,
             topic,
             broadcast_tx,
-        })
+            network_state: network_state.clone(),
+        }, network_state))
     }
 
     /// Broadcasts a local mutation to the local network mesh.
@@ -88,7 +116,8 @@ impl StateSyncEngine {
     }
 }
 
-fn broadcast_delta(swarm: &mut Swarm<QosSyncBehaviour>, topic: &IdentTopic, delta: StateDelta) {
+fn broadcast_delta(swarm: &mut Swarm<QosSyncBehaviour>, topic: &IdentTopic, delta: StateDelta, telemetry_tx: &tokio::sync::broadcast::Sender<String>) {
+    // Attempt serialization and broadcasting
     let encoded = match bincode::serialize(&delta) {
         Ok(bytes) => bytes,
         Err(e) => {
@@ -98,9 +127,17 @@ fn broadcast_delta(swarm: &mut Swarm<QosSyncBehaviour>, topic: &IdentTopic, delt
     };
 
     if let Err(e) = swarm.behaviour_mut().gossipsub.publish(topic.clone(), encoded) {
-        error!("Failed to publish Gossipsub message: {:?}", e);
+        error!("Failed to publish state delta via Gossipsub: {:?}", e);
     } else {
-        debug!("Broadcasted StateDelta for key: {:?}", delta.key.key);
+        info!("Published state CRDT delta via Gossipsub for key {}", delta.key.key);
+        
+        // Emit pulse
+        let pulse = serde_json::json!({
+            "type": "GOSSIPSUB_PULSE",
+            "source": "local",
+            "key": delta.key.key,
+        });
+        let _ = telemetry_tx.send(pulse.to_string());
     }
 }
 
@@ -108,6 +145,8 @@ fn handle_swarm_event(
     event: SwarmEvent<QosSyncBehaviourEvent>,
     swarm: &mut Swarm<QosSyncBehaviour>,
     store: &Arc<SledStateStore>,
+    network_state: &Arc<RwLock<NetworkState>>,
+    telemetry_tx: &tokio::sync::broadcast::Sender<String>,
 ) {
     match event {
         SwarmEvent::Behaviour(QosSyncBehaviourEvent::Mdns(mdns::Event::Discovered(list))) => {
@@ -172,10 +211,74 @@ fn handle_swarm_event(
             message,
         })) => {
             // We received a state sync event from the network!
+            
+            if let Ok(delta) = bincode::deserialize::<StateDelta>(&message.data) {
+                let pulse = serde_json::json!({
+                    "type": "GOSSIPSUB_PULSE",
+                    "source": peer_id.to_string(),
+                    "key": delta.key.key,
+                });
+                let _ = telemetry_tx.send(pulse.to_string());
+            }
+
             process_incoming_gossip_message(peer_id, message, store);
+        }
+        SwarmEvent::Behaviour(QosSyncBehaviourEvent::Kademlia(kad::Event::OutboundQueryProgressed {
+            result: kad::QueryResult::Bootstrap(Ok(_)),
+            ..
+        })) => {
+            info!("Kademlia DHT bootstrap successful!");
+        }
+        SwarmEvent::Behaviour(QosSyncBehaviourEvent::Kademlia(kad::Event::RoutingUpdated {
+            peer,
+            is_new_peer,
+            addresses,
+            ..
+        })) => {
+            if is_new_peer {
+                info!("DHT discovered new global peer: {} at {:?}", peer, addresses);
+                // The prompt asked for: "When a node discovers a new peer via the DHT, it should automatically add them to its local routing table."
+                // In libp2p, Kademlia does this automatically for its own table, but we must also inject them into Gossipsub so the mesh can form.
+                swarm.behaviour_mut().gossipsub.add_explicit_peer(&peer);
+                
+                // We can also initiate a sync request just like we do for mDNS
+                info!("Sending immediate SyncRequest to DHT-discovered node: {}", peer);
+                swarm.behaviour_mut().request_response.send_request(&peer, crate::network::SyncRequest);
+            }
         }
         SwarmEvent::NewListenAddr { address, .. } => {
             info!("StateSyncEngine listening on {}", address);
+            if let Ok(mut state) = network_state.write() {
+                state.listen_addrs.push(address.to_string());
+            }
+        }
+        SwarmEvent::ConnectionEstablished { peer_id, endpoint, .. } => {
+            let addr = endpoint.get_remote_address().to_string();
+            let is_relay = addr.contains("/p2p-circuit");
+            if is_relay {
+                info!("[MESH] Secure tunnel established via Relay");
+            } else {
+                info!("[MESH] Direct P2P connection active");
+            }
+            if let Ok(mut state) = network_state.write() {
+                state.peers.insert(peer_id.to_string(), PeerInfo {
+                    multiaddr: Some(addr),
+                    latency_ms: None,
+                    connection_type: if is_relay { ConnectionType::Relayed } else { ConnectionType::Direct },
+                });
+            }
+        }
+        SwarmEvent::ConnectionClosed { peer_id, .. } => {
+            if let Ok(mut state) = network_state.write() {
+                state.peers.remove(&peer_id.to_string());
+            }
+        }
+        SwarmEvent::Behaviour(QosSyncBehaviourEvent::Ping(ping::Event { peer, result: Ok(rtt), .. })) => {
+            if let Ok(mut state) = network_state.write() {
+                if let Some(peer_info) = state.peers.get_mut(&peer.to_string()) {
+                    peer_info.latency_ms = Some(rtt.as_millis() as u64);
+                }
+            }
         }
         _ => {}
     }

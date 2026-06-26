@@ -51,9 +51,11 @@ mod tests {
             sha256,
             signature: None,
             signer_pubkey: None,
+            manifest_uri: None,
             capabilities: CapabilitySet::default(),
             entrypoint: "run".into(),
             ttl_secs: None,
+            requires_license: false,
         }
     }
 

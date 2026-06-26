@@ -8,6 +8,9 @@
   ],
   "scripts": {
     "build": "turbo build",
+    "build:all": "turbo run build build:rust",
+    "postbuild:all": "mkdir -p target/release/public && cp -R apps/web/out/* target/release/public/",
+    "build:rust": "cargo build --release --workspace",
     "build:web": "turbo run build --filter=web",
     "build:marketing": "turbo run build --filter=marketing",
     "dev": "turbo dev",

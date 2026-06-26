@@ -11,4 +11,5 @@ pub struct ApiState {
     pub execution_engine: ExecutionEngine,
     pub auth_token: String,
     pub tx_telemetry: broadcast::Sender<String>,
+    pub network_state: Arc<std::sync::RwLock<qos_types::network::NetworkState>>,
 }

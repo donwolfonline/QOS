@@ -56,16 +56,63 @@ pub async fn execute_handler(
     };
 
     match result_future {
-        Ok(res) => (
-            StatusCode::OK,
-            Json(json!({
-                "status": format!("{:?}", res.status),
-                "exit_code": res.exit_code,
-                "fuel_consumed": res.fuel_consumed,
-                "peak_memory_bytes": res.memory.peak_bytes,
-                "events_emitted": res.events.len(),
-            })),
-        ),
+        Ok(res) => {
+            use qos_engine::context::InvocationStatus;
+            match res.status {
+                InvocationStatus::Success => (
+                    StatusCode::OK,
+                    Json(json!({
+                        "status": "SUCCESS",
+                        "exit_code": res.exit_code,
+                        "fuel_consumed": res.fuel_consumed,
+                        "peak_memory_bytes": res.memory.peak_bytes,
+                        "events_emitted": res.events.len(),
+                    })),
+                ),
+                InvocationStatus::FuelExhausted | InvocationStatus::TimedOut => (
+                    StatusCode::BAD_REQUEST,
+                    Json(json!({
+                        "status": "EXECUTION_HALTED: RESOURCE_EXHAUSTED",
+                        "fuel_consumed": res.fuel_consumed,
+                        "peak_memory_bytes": res.memory.peak_bytes,
+                    })),
+                ),
+                InvocationStatus::Trapped { reason } => (
+                    StatusCode::BAD_REQUEST,
+                    Json(json!({
+                        "status": "EXECUTION_HALTED: TRAP",
+                        "reason": reason,
+                        "fuel_consumed": res.fuel_consumed,
+                        "peak_memory_bytes": res.memory.peak_bytes,
+                    })),
+                ),
+                InvocationStatus::SecurityViolation { reason } => (
+                    StatusCode::BAD_REQUEST,
+                    Json(json!({
+                        "status": "EXECUTION_HALTED: SECURITY_VIOLATION",
+                        "reason": reason,
+                        "fuel_consumed": res.fuel_consumed,
+                        "peak_memory_bytes": res.memory.peak_bytes,
+                    })),
+                ),
+                InvocationStatus::Unlicensed => (
+                    StatusCode::PAYMENT_REQUIRED,
+                    Json(json!({
+                        "status": "EXECUTION_HALTED: UNLICENSED",
+                        "reason": "This module requires a valid license receipt.",
+                        "fuel_consumed": res.fuel_consumed,
+                        "peak_memory_bytes": res.memory.peak_bytes,
+                    })),
+                ),
+                InvocationStatus::EngineError { reason } => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(json!({
+                        "status": "ENGINE_ERROR",
+                        "reason": reason,
+                    })),
+                ),
+            }
+        },
         Err(e) => {
             error!("API Execution failed: {}", e);
             (

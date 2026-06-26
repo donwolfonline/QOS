@@ -184,28 +184,68 @@ async fn main() -> anyhow::Result<()> {
     .context("initialising bootloader")?;
 
     // ── Initialise P2P state sync ─────────────────────────────────────────────
-    let local_key = identity::Keypair::generate_ed25519();
+    let identity_path = cfg.state_dir.join(".qos-identity");
+    let local_key = if identity_path.exists() {
+        let bytes = std::fs::read(&identity_path).context("Failed to read .qos-identity")?;
+        if bytes.len() != 32 {
+            anyhow::bail!("Invalid .qos-identity length: expected 32 bytes, got {}", bytes.len());
+        }
+        let mut key_bytes = [0u8; 32];
+        key_bytes.copy_from_slice(&bytes[..32]);
+        let secret = identity::ed25519::SecretKey::try_from_bytes(key_bytes)
+            .context("Invalid Ed25519 secret key in .qos-identity")?;
+        identity::Keypair::from(identity::ed25519::Keypair::from(secret))
+    } else {
+        let key = identity::Keypair::generate_ed25519();
+        let ed25519_key = key.clone().try_into_ed25519().unwrap();
+        std::fs::write(&identity_path, ed25519_key.secret().as_ref())
+            .context("Failed to write .qos-identity")?;
+        info!("Generated and saved new permanent P2P identity to {:?}", identity_path);
+        key
+    };
+
     let local_peer_id = local_key.public().to_peer_id();
-    info!(peer_id = %local_peer_id, "Generated local P2P identity");
+    info!(peer_id = %local_peer_id, "Loaded P2P identity");
 
-    let behaviour = QosSyncBehaviour::new(&local_key).map_err(|e| anyhow::anyhow!(e.to_string()))?;
-
-    let mut swarm = libp2p::SwarmBuilder::with_existing_identity(local_key)
+    let mut swarm = libp2p::SwarmBuilder::with_existing_identity(local_key.clone())
         .with_tokio()
         .with_tcp(
             libp2p::tcp::Config::default(),
             libp2p::noise::Config::new,
             libp2p::yamux::Config::default,
         )?
-        .with_behaviour(|_| behaviour).map_err(|e| anyhow::anyhow!(e))?
+        .with_dns()?
+        .with_relay_client(libp2p::noise::Config::new, libp2p::yamux::Config::default)?
+        .with_behaviour(|key, relay_behaviour| {
+            QosSyncBehaviour::new(key, relay_behaviour).expect("Failed to init behaviour")
+        })?
         .with_swarm_config(|cfg| cfg.with_idle_connection_timeout(std::time::Duration::from_secs(60)))
         .build();
 
     // Listen on all interfaces, random OS-assigned port
     swarm.listen_on("/ip4/0.0.0.0/tcp/0".parse()?)?;
 
+    let auth_token = uuid::Uuid::new_v4().to_string();
+
     // Spawn the Sync Engine Actor
-    let sync_engine = StateSyncEngine::spawn(swarm, Arc::clone(&state)).await.expect("Failed to spawn Sync Engine");
+    let (sync_engine, network_state) = StateSyncEngine::spawn(swarm, Arc::clone(&state), telemetry_tx.clone()).await.expect("Failed to spawn Sync Engine");
+
+    // Spawn the Topology Tick background task
+    let tick_tx = telemetry_tx.clone();
+    let tick_network_state = network_state.clone();
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(std::time::Duration::from_secs(2));
+        loop {
+            interval.tick().await;
+            if let Ok(state_guard) = tick_network_state.read() {
+                let payload = serde_json::json!({
+                    "type": "NETWORK_TOPOLOGY_TICK",
+                    "topology": *state_guard
+                });
+                let _ = tick_tx.send(payload.to_string());
+            }
+        }
+    });
 
     info!("Q-OS runtime components initialized, building system context...");
 
@@ -229,6 +269,7 @@ async fn main() -> anyhow::Result<()> {
         execution_engine: ctx.execution_engine.clone(),
         auth_token: auth_token.clone(),
         tx_telemetry: telemetry_tx.clone(),
+        network_state,
     };
 
     tokio::spawn(async move {

@@ -135,6 +135,9 @@ fn build_project(project_path: &Path, out_dir: &Path, manifest_path: Option<&Pat
             entrypoint: "run".to_string(),
             dependencies: Default::default(),
             initial_state: Default::default(),
+            signature: None,
+            public_key: None,
+            requires_license: false,
         }
     };
 

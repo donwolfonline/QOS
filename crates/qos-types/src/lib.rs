@@ -7,6 +7,7 @@
 pub mod descriptor;
 pub mod error;
 pub mod manifest;
+pub mod network;
 pub mod sync;
 
 pub use descriptor::{CapabilitySet, ModuleDescriptor};
