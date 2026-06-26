@@ -7,15 +7,15 @@ import { motion } from 'framer-motion';
 const FEATURES = [
   {
     icon: '⚡',
-    title: 'Live Floor Plan',
-    desc: 'See every table, every guest, in real-time. Occupancy updates propagate via CRDT sync in under 50ms — no polling, no page refresh.',
+    title: 'Live Edge Topology',
+    desc: 'See every edge node in real-time. State updates propagate across the local mesh via CRDT sync in under 50ms — no polling, no page refresh.',
     color: '#00d4ff',
     tag: 'Real-time',
   },
   {
     icon: '🧩',
     title: 'Hot-Swap Logic Modules',
-    desc: 'Switch from "Guestbook" to "Happy Hour Menu" to "VIP Checkout" mid-service without reprinting a single QR code. One click in the Admin HUD.',
+    desc: 'Deploy new WASM modules and switch edge logic instantly without touching physical hardware or restarting nodes. Manage fleets with one click in the Admin HUD.',
     color: '#00ff41',
     tag: 'Zero Downtime',
   },
